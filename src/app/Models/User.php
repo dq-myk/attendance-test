@@ -17,10 +17,8 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
+    protected $guarded = [
+        'id',
     ];
 
     /**
@@ -41,4 +39,16 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    // 勤怠とのリレーション (1対多)
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
+    // 申請とのリレーション (1対多)
+    public function requests()
+    {
+        return $this->hasMany(Request::class);
+    }
 }

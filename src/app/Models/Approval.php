@@ -8,4 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class Approval extends Model
 {
     use HasFactory;
+
+    protected $guarded = [
+        'id',
+    ];
+
+    // 申請とのリレーション (1対1)
+    public function request()
+    {
+        return $this->belongsTo(Requests::class);
+    }
 }
