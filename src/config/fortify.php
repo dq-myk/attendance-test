@@ -2,6 +2,8 @@
 
 use App\Providers\RouteServiceProvider;
 use Laravel\Fortify\Features;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 return [
 
@@ -74,7 +76,18 @@ return [
     |
     */
 
-    'home' => RouteServiceProvider::HOME,
+    // 'home' => RouteServiceProvider::HOME,
+    'home' => function () {
+        $user = Auth::user();
+
+        if ($user->role === 'admin') {
+            return '/admin/attendance/list';
+        }
+
+        if ($user->role === 'staff') {
+            return '/attendance';
+        }
+    },
 
     /*
     |--------------------------------------------------------------------------

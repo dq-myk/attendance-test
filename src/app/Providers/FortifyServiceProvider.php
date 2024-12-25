@@ -3,15 +3,15 @@
 namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
-use App\Actions\Fortify\ResetUserPassword;
-use App\Actions\Fortify\UpdateUserPassword;
-use App\Actions\Fortify\UpdateUserProfileInformation;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Redirect;
+use App\Http\Requests\RegisterRequest;
 use Laravel\Fortify\Fortify;
+use App\Models\User;
+
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -36,6 +36,22 @@ class FortifyServiceProvider extends ServiceProvider
 
         Fortify::loginView(function () {
             return view('auth.login');
+        });
+
+        Fortify::authenticateUsing(function ($request) {
+            $user = User::where('email', $request->email)->first();
+
+            if ($user && Hash::check($request->password, $user->password)) {
+                if ($user->role === 'admin' && $request->routeIs('admin.login')) {
+                    return $user;
+                }
+
+                if ($user->role === 'staff' && $request->routeIs('auth.login')) {
+                    return $user;
+                }
+            }
+
+            return null;
         });
 
         RateLimiter::for('login', function (Request $request) {

@@ -14,7 +14,7 @@ class AddColumnOthersToUsers extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->enum('role', ['admin', 'staff'])->default('staff')->after('password')->nullable();
+            $table->string('role')->default('staff')->after('password');
         });
     }
 
@@ -26,7 +26,7 @@ class AddColumnOthersToUsers extends Migration
     public function down()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('role')->nullable(false);
+            $table->dropColumn('role');
         });
     }
 }

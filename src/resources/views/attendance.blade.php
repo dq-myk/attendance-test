@@ -19,17 +19,17 @@
 @endsection
 
 @section('content')
-<div class = "attendance-group">
+<div class="attendance__group">
     <div class="status-label">{{ $status }}</div>
     <h1 class="date">{{ $currentDate }}</h1>
     <h2 class="time">{{ $currentTime }}</h2>
     <div class="button-container">
-        @if ($status === '勤務外')
+        @if ($status === '勤務外' && !$isAlreadyCheckedIn)
             <form action="/attendance/start" method="POST">
                 @csrf
                 <button type="submit" class="button">出勤</button>
             </form>
-        @elseif ($status === '勤務中')
+        @elseif ($status === '出勤中')
             <form action="/attendance/end" method="POST">
                 @csrf
                 <button type="submit" class="button">退勤</button>
@@ -44,6 +44,12 @@
                 <button type="submit" class="button">休憩戻</button>
             </form>
         @endif
+        @if (session('message'))
+        <div class="alert">
+            {{ session('message') }}
+        </div>
+        @endif
     </div>
 </div>
 @endsection
+

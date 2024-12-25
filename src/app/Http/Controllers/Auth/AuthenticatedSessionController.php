@@ -12,7 +12,6 @@ class AuthenticatedSessionController extends Controller
 {
     public function store(LoginRequest $request)
     {
-        // 認証の失敗時に特定のエラーメッセージを追加
         if (!Auth::attempt($request->only('email', 'password'))) {
             return back()->withErrors([
                 'login_error' => 'ログイン情報が登録されていません。',
@@ -23,12 +22,14 @@ class AuthenticatedSessionController extends Controller
 
         // ロールに応じてリダイレクト先を設定
         $user = Auth::user();
-        if ($user->role === 'admin') {
-            return redirect()->intended('/admin/attendance/list');
-        } elseif ($user->role === 'staff') {
+        if ($user->role === 'staff') {
             return redirect()->intended('/attendance');
+        } else {
+            return redirect()->intended('/login');
         }
-
-        return redirect()->intended('/home');
     }
 }
+
+
+
+

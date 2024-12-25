@@ -1,0 +1,46 @@
+.login-form__inner {
+    display: flex;
+    justify-content: center;
+    margin-top: 48px;
+}
+
+.login-form__form {
+    width: 45vw;
+}
+
+@media screen and (max-width: 850px) {
+    .login-form__form .login-form__heading {
+        width: 8vw;
+    }
+}
+
+.login-form__group {
+    margin-bottom: 32px;
+}
+
+.login-form__label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 2.4rem;
+    font-weight: bold;
+}
+
+.login-form__input {
+    display: block;
+    padding: 8px 12px;
+    width: 45vw;
+    height: 60px;
+    border: 1px solid #5F5F5F;
+    border-radius: 4px;
+    color: #000;
+}
+
+.login-form__error-message {
+    color: #FF9494;
+    font-size: 2rem;
+}
+
+.login-form__btn {
+    margin: 100px auto 0;
+    width: 45vw;
+}
