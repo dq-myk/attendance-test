@@ -3,7 +3,7 @@ a {
 }
 
 h1 {
-    margin: 80px 0px 50px 150px;
+    margin: 80px 0px 50px 220px;
     padding-left: 20px;
     color: #000;
     text-align: left;
@@ -43,7 +43,77 @@ span {
     text-align: center;
 }
 
+.attendance-detail {
+    width: 70%;
+    margin: 0 auto;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #E1E1E1;
+    border-radius: 10px;
+    overflow: hidden;
+}
 
+.attendance-detail th,
+.attendance-detail td {
+    border-bottom: 2px solid #E1E1E1;
+}
+
+.attendance-detail_label,
+.attendance__data {
+    padding: 16px 30px;
+    background-color: #fff;
+    font-size: 1.6rem;
+    text-align: center;
+}
+
+.attendance-detail_label {
+    width: 150px;
+}
+
+.attendance__data__name {
+    padding: 30px 200px 30px 0;
+    background-color: #fff;
+    color: #000;
+    text-align: center;
+}
+
+.attendance__data__input {
+    width: 100px;
+    margin: 10px 50px;
+    font-size: 1.6rem;
+    text-align: center;
+    border: 1px solid #E1E1E1;
+    border-radius: 4px;
+}
+
+.attendance__data__text {
+    margin-left: 10px;
+    width: 330px;
+    height: 80px;
+    border: 1px solid #E1E1E1;
+    border-radius: 4px;
+    font-size: 1.6rem;
+    resize: none;
+}
+
+.remarks__error-message {
+    color: #FF9494;
+    font-size: 1.6rem;
+}
+
+.revision {
+    margin-top: 60px;
+    margin-right: 250px;
+    text-align: right;
+}
+
+.revision__button {
+    padding: 8px 30px;
+    background-color: black;
+    color: white;
+    border: none;
+    border-radius: 4px;
+}
 
 @media screen and (max-width: 850px) {
     .header-container {
@@ -59,4 +129,5 @@ span {
 
         gap: 10px;
     }
+
 }

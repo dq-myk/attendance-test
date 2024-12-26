@@ -20,13 +20,52 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        // ロールに応じてリダイレクト先を設定
         $user = Auth::user();
-        if ($user->role === 'staff') {
+        if ($user->isStaff()) {
             return redirect()->intended('/attendance');
         } else {
             return redirect()->intended('/login');
         }
+
+    }
+
+    public function adminStore(LoginRequest $request)
+    {
+        if (!Auth::attempt($request->only('email', 'password'))) {
+            return back()->withErrors([
+                'login_error' => 'ログイン情報が登録されていません。',
+            ]);
+        }
+
+        $request->session()->regenerate();
+
+        $user = Auth::user();
+        if ($user->isAdmin()) {
+            return redirect()->intended('/admin/attendance/list');
+        } else {
+            return redirect()->intended('/admin/login');
+        }
+    }
+
+    public function destroy(Request $request)
+    {
+        $user = $request->user();
+        $redirectTo = '/login';
+
+        if ($user) {
+            if ($user->role === 'admin') {
+                $redirectTo = '/admin/login';
+            } elseif ($user->role === 'staff') {
+                $redirectTo = '/login';
+            }
+        }
+
+        auth()->guard('web')->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect($redirectTo);
     }
 }
 

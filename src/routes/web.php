@@ -14,23 +14,27 @@ Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 
 //管理者ログイン
 Route::get('/admin/login', [UserController::class, 'adminShow']);
-Route::post('/admin/login', [UserController::class, 'adminLogin']);
-
-
-// Route::middleware(['auth', 'admin'])->group(function () {
-//     Route::get('/admin/attendance/list', [AttendanceController::class, 'index']);
-// });
+Route::post('/admin/login', [AuthenticatedSessionController::class, 'adminStore']);
 
 
 Route::middleware('auth')->group(function () {
+    Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
+
+    //スタッフ
     Route::get('/attendance', [AttendanceController::class, 'index']);
     Route::post('/attendance/start', [AttendanceController::class, 'startWork']);
     Route::post('/attendance/end', [AttendanceController::class, 'endWork']);
     Route::get('/attendance/list', [AttendanceController::class, 'listShow']);
     Route::get('/attendance/{id}', [AttendanceController::class, 'detail']);
+    Route::post('/attendance/{id}', [AttendanceController::class, 'update']);
 
     Route::post('/attendance/rest-start', [RestController::class, 'startRest']);
     Route::post('/attendance/rest-end', [RestController::class, 'endRest']);
+
+
+    //管理者
+    Route::get('/admin/attendance/list', [AttendanceController::class, 'adminList']);
+    Route::get('/attendance/{id}', [AttendanceController::class, 'adminDetail']);
 });
 
 

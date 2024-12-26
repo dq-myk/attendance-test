@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Attendance;
+use App\Models\Rest;
+use App\Http\Requests\RequestRequest;
 use Carbon\Carbon;
 
 class AttendanceController extends Controller
 {
+    //勤怠画面表示
     public function index()
     {
         $currentDate = Carbon::now()->format('Y年m月d日 ') . '(' . $this->weekday(Carbon::now()->format('D')) . ')';
@@ -79,7 +82,7 @@ class AttendanceController extends Controller
     public function listShow(Request $request)
     {
         $user = Auth::user();
-    if ($user->role === 'staff') {
+        if ($user->isStaff()) {
         try {
             $month = $request->query('month', Carbon::now()->month);
             $year = $request->query('year', Carbon::now()->year);
@@ -129,25 +132,118 @@ class AttendanceController extends Controller
     }
     }
 
-    //勤怠詳細画面表示
+    //スタッフ勤怠詳細画面表示
     public function detail($id)
     {
-        return view('attendance_detail', ['id' => $id]);
+        $attendance = Attendance::with('rests', 'user')->find($id);
+
+        $rests = $attendance->rests;
+
+        $date = Carbon::parse($attendance->date);
+        $year = $date->format('Y年');
+        $monthDay = $date->format('m月d日');
+
+        return view('attendance_detail', compact('attendance', 'rests', 'year', 'monthDay'));
     }
 
-    //管理者勤怠一覧、前日、翌日参照
-    // public function index(Request $request)
-    // {
-    //     $user = Auth::user();
+    public function update(RequestRequest $request, $attendanceId)
+    {
+        // 既存の勤怠情報を取得
+        $attendance = Attendance::findOrFail($attendanceId);
 
-    //     if (!$user || $user->role !== 'admin') {
-    //         return redirect('/admin/login');
-    //     }
+        // 年と月日を結合して日付形式に変換
+        $date = Carbon::parse($request->year . '-' . $request->month_day);
 
-    //     $date = $request->query('date', Carbon::now()->toDateString());
+        // 出勤時間と退勤時間を保存
+        $attendance->update([
+            'date' => $date,
+            'clock_in' => Carbon::parse($date->format('Y-m-d') . ' ' . $request->clock_in),
+            'clock_out' => Carbon::parse($date->format('Y-m-d') . ' ' . $request->clock_out),
+        ]);
 
-    //     $attendances = Attendance::whereDate('date', $date)->with('rests')->get();
+        // 休憩時間を保存（Restsテーブルの更新）
+        if ($request->has('rest_start') && $request->has('rest_end')) {
+            foreach ($request->rest_start as $index => $restStart) {
+                $restEnd = $request->rest_end[$index] ?? null;
+                $attendance->user->rests()->updateOrCreate(
+                    ['id' => $attendance->user->rests[$index]->id ?? null],
+                    [
+                        'rest_start' => Carbon::parse($date->format('Y-m-d') . ' ' . $restStart),
+                        'rest_end' => $restEnd ? Carbon::parse($date->format('Y-m-d') . ' ' . $restEnd) : null,
+                    ]
+                );
+            }
+        }
 
-    //     return view('admin_attendance_list', compact('attendances', 'date'));
-    // }
+        // 備考を保存し、申請処理日付（現在の日付）をdateカラムに保存
+        $attendance->user->requests()->updateOrCreate(
+            ['user_id' => $attendance->user->id],
+            [
+                'remarks' => $request->remarks,
+                'date' => Carbon::now(),  // 現在の日付を保存
+            ]
+        );
+
+        return redirect('/stamp_correction_request/list', ['attendance' => $attendanceId]);
+    }
+
+
+
+    //管理者勤怠一覧画面表示
+    public function adminList(Request $request)
+    {
+        $user = Auth::user();
+        if ($user->isAdmin()) {
+
+            try {
+                $date = Carbon::parse($request->query('date', Carbon::today()->toDateString()))->toDateString();
+            } catch (\Exception $e) {
+                $date = Carbon::today()->toDateString();
+            }
+
+            $attendances = Attendance::whereDate('date', $date)->get();
+
+            foreach ($attendances as $attendance) {
+            $totalRestTime = 0;
+            $rests = $attendance->rests;
+
+            foreach ($rests as $rest) {
+                $restStart = Carbon::parse($rest->rest_start);
+                $restEnd = Carbon::parse($rest->rest_end);
+                $totalRestTime += $restStart->diffInMinutes($restEnd);
+            }
+
+            $clockIn = Carbon::parse($attendance->clock_in);
+            $clockOut = Carbon::parse($attendance->clock_out);
+            $workDuration = $clockIn->diffInMinutes($clockOut);
+
+            $workTimeExcludingRest = $workDuration - $totalRestTime;
+
+            $attendance->totalRestTime = $totalRestTime;
+            $attendance->workTimeExcludingRest = $workTimeExcludingRest;
+        }
+
+            return view('admin_attendance_list', compact('attendances', 'date'));
+        } else {
+            return redirect()->intended('/admin/login');
+        }
+    }
+
+    //管理者勤怠詳細画面表示
+    public function adminDetail($id)
+    {
+        $user = Auth::user();
+        if ($user->isAdmin()) {
+            $attendance = Attendance::with('rests', 'user')->find($id);
+
+            $rests = $attendance->rests;
+
+            $date = Carbon::parse($attendance->date);
+            $year = $date->format('Y年');
+            $monthDay = $date->format('m月d日');
+
+            return view('admin_attendance_detail', compact('attendance', 'rests', 'year', 'monthDay'));
+        }
+    }
+
 }

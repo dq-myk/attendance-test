@@ -24,6 +24,10 @@ class RequestRequest extends FormRequest
     public function rules()
     {
         return [
+            'clock_in' => 'required|date|before:end_time',
+            'clock_out' => 'required|date|after:start_time',
+            'rest_start' => 'nullable|date|after:start_time|before:end_time',
+            'rest_end' => 'nullable|date|after:break_start|before:end_time',
             'remarks' => 'required|max:50',
         ];
     }
@@ -31,8 +35,12 @@ class RequestRequest extends FormRequest
     public function messages()
     {
         return [
-            'remarks.required' => 'コメントを入力してください',
-            'remarks.max' => 'コメント内容は50文字以内で入力してください',
+            'clock_in.before' => '出勤時間もしくは退勤時間が不適切な値です',
+            'clock_out.after' => '出勤時間もしくは退勤時間が不適切な値です',
+            'rest_start.after' => '休憩時間が勤務時間外です',
+            'rest_end.before' => '休憩時間が勤務時間外です',
+            'remarks.required' => '備考を入力してください',
+            'remarks.max' => '備考内容は50文字以内で入力してください',
         ];
     }
 }

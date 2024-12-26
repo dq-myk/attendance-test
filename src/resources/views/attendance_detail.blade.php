@@ -20,53 +20,75 @@
 
 @section('content')
 <div class="attendance-detail__group">
-
     <h1>勤怠詳細</h1>
+    <form action="/attendance/{{ $attendance->id }}" method="POST">
+        @csrf
+        <div class="attendance-detail__table">
+            <table class="attendance-detail">
+                <tr class="attendance-detail__row">
+                    <th class="attendance-detail_label">名前</th>
+                    <td class="attendance__data__name">{{ $attendance->user->name }}</td>
+                </tr>
+                <tr class="attendance-detail__row">
+                    <th class="attendance-detail_label">日付</th>
+                    <td class="attendance__data">
+                        <input class="attendance__data__input" type="text" name="year" value="{{ $year }}">&nbsp;&nbsp;
+                        <input class="attendance__data__input" type="text" name="month_day" value="{{ $monthDay }}">
+                    </td>
+                </tr>
+                <tr>
+                    <th class="attendance-detail_label">出勤・退勤</th>
+                    <td class="attendance__data">
+                        <input class="attendance__data__input" type="text" name="clock_in" value="{{ \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') }}">～
+                        <input class="attendance__data__input" type="text" name="clock_out" value="{{ \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') }}">
+                    </td>
+                </tr>
+                <tr>
+                    @foreach ($rests as $index => $rest)
+                        <tr>
+                            @if ($index == 0)
+                                <th class="attendance-detail_label">休憩</th>
+                            @else
+                                <th class="attendance-detail_label">休憩{{ $index + 1 }}</th>
+                            @endif
+                            <td class="attendance__data">
+                                <div class="attendance__data__rest">
+                                    <input class="attendance__data__input" type="text" name="rest_start[]" value="{{ $rest->rest_start ? \Carbon\Carbon::parse($rest->rest_start)->format('H:i') : '' }}">～
+                                    <input class="attendance__data__input" type="text" name="rest_end[]" value="{{ $rest->rest_end ? \Carbon\Carbon::parse($rest->rest_end)->format('H:i') : '' }}">
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
 
-    <table class="attendance-detail">
-        <tr class="attendance-detail__row">
-            <th class="attendance-detail_label">名前</th>
-            <td class="attendance__data">{{ $attendance->user->name ?? '' }}</td>
-            <input type="hidden" name="name" value="{{ $attendance->user->name ?? '' }}">
-        </tr>
-        <tr class="attendance-detail__row">
-            <th class="attendance-detail_label">日付</th>
-            <td class="attendance__data">
-                <input class="attendance__data__input" type="text" name="date" value="{{ old('date', $attendance->user->date->format('Y年') ?? '') }}">
-            </td>
-            <td class="attendance__data">
-                <input class="attendance__data__input" type="text" name="date" value="{{ old('date', $attendance->user->date->format('m月d日') ?? '') }}">
-            </td>
-            <input type="hidden" name="date" value="{{ $attendance->user->date ?? '' }}">
-        </tr>
-        <tr>
-            <th class="attendance-detail_label">出勤</th>
-            <td class="attendance__data">
-                <input class="attendance__data__input" type="text" name="clock_in" value="{{ old('clock_in', \Carbon\Carbon::parse($attendance->clock_in ?? '')->format('H:i')) }}">
-                <input type="hidden" name="clock_in" value="{{ \Carbon\Carbon::parse($attendance->clock_in ?? '')->format('H:i') }}">
-            </td>
-            <td>～</td>
-            <td class="attendance__data">
-                <input class="attendance__data__input" type="text" name="clock_out" value="{{ old('clock_out', \Carbon\Carbon::parse($attendance->clock_out ?? '')->format('H:i')) }}">
-                <input type="hidden" name="clock_out" value="{{ \Carbon\Carbon::parse($attendance->clock_out ?? '')->format('H:i') }}">
-            </td>
-        </tr>
-        <tr>
-            <th class="attendance-detail_label">休憩</th>
-            <td class="attendance__data">
-                <input class="attendance__data__input" type="text" name="rest_start" value="{{ old('rest_start', \Carbon\Carbon::parse($rest->rest_start ?? '')->format('H:i')) }}">
-                <input type="hidden" name="rest_start" value="{{ \Carbon\Carbon::parse($rest->rest_start ?? '')->format('H:i') }}">
-            </td>
-            <td>～</td>
-            <td class="attendance__data">
-                <input class="attendance__data__input" type="text" name="rest_end" value="{{ old('rest_end', \Carbon\Carbon::parse($rest->rest_end ?? '')->format('H:i')) }}">
-                <input type="hidden" name="rest_end" value="{{ \Carbon\Carbon::parse($rest->rest_end ?? '')->format('H:i') }}">
-            </td>
-        </tr>
-        <tr>
-            <th class="attendance-detail_label">備考</th>
-            <textarea name="remarks"></textarea>
-        </tr>
-    </table>
+                    {{-- 休憩がない場合の空の入力欄 --}}
+                    @if ($rests->isEmpty())
+                        <tr>
+                            <th class="attendance-detail_label">休憩</th>
+                            <td class="attendance__data">
+                                <div class="attendance__data__rest">
+                                    <input class="attendance__data__input" type="text" name="rest_start[]" value="">～
+                                    <input class="attendance__data__input" type="text" name="rest_end[]" value="">
+                                </div>
+                            </td>
+                        </tr>
+                    @endif
+                </tr>
+                <tr>
+                    <th class="attendance-detail_label">備考</th>
+                    <td class="attendance__data">
+                        <textarea class="attendance__data__text" name="remarks"></textarea>
+                        <p class="remarks__error-message">
+                            @error('remarks')
+                                {{ $message }}
+                            @enderror
+                        </p>
+                    </td>
+                </tr>
+            </table>
+            <div class="revision">
+                <button class="revision__button" type="submit">修正</button>
+            </div>
+        </div>
+    </form>
 </div>
 @endsection
