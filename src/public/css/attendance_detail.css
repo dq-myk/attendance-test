@@ -96,7 +96,7 @@ span {
     resize: none;
 }
 
-.remarks__error-message {
+.detail__error-message {
     color: #FF9494;
     font-size: 1.6rem;
 }

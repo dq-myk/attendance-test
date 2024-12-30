@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Request extends Model
+class Application extends Model
 {
     use HasFactory;
 
@@ -16,7 +16,7 @@ class Request extends Model
     // ユーザーとのリレーション (多対1)
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'admin_id');
     }
 
     // 承認とのリレーション (1対1)

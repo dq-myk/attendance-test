@@ -23,6 +23,7 @@
     <h1>勤怠詳細</h1>
     <form action="/attendance/{{ $attendance->id }}" method="POST">
         @csrf
+        @method('PUT')
         <div class="attendance-detail__table">
             <table class="attendance-detail">
                 <tr class="attendance-detail__row">
@@ -41,43 +42,58 @@
                     <td class="attendance__data">
                         <input class="attendance__data__input" type="text" name="clock_in" value="{{ \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') }}">～
                         <input class="attendance__data__input" type="text" name="clock_out" value="{{ \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') }}">
+                        <div class="detail__error-message">
+                            @if ($errors->has('clock_in'))
+                                <p class="detail__error-message-clock_in">{{$errors->first('clock_in')}}</p>
+                            @endif
+                            @if ($errors->has('clock_out'))
+                                <p class="detail__error-message-clock_out">{{$errors->first('clock_out')}}</p>
+                            @endif
+                        </div>
                     </td>
                 </tr>
-                <tr>
-                    @foreach ($rests as $index => $rest)
-                        <tr>
-                            @if ($index == 0)
-                                <th class="attendance-detail_label">休憩</th>
-                            @else
-                                <th class="attendance-detail_label">休憩{{ $index + 1 }}</th>
-                            @endif
-                            <td class="attendance__data">
-                                <div class="attendance__data__rest">
-                                    <input class="attendance__data__input" type="text" name="rest_start[]" value="{{ $rest->rest_start ? \Carbon\Carbon::parse($rest->rest_start)->format('H:i') : '' }}">～
-                                    <input class="attendance__data__input" type="text" name="rest_end[]" value="{{ $rest->rest_end ? \Carbon\Carbon::parse($rest->rest_end)->format('H:i') : '' }}">
-                                </div>
-                            </td>
-                        </tr>
-                    @endforeach
-
-                    {{-- 休憩がない場合の空の入力欄 --}}
-                    @if ($rests->isEmpty())
-                        <tr>
+                @foreach ($rests as $index => $rest)
+                    <tr>
+                        @if ($index == 0)
                             <th class="attendance-detail_label">休憩</th>
-                            <td class="attendance__data">
-                                <div class="attendance__data__rest">
-                                    <input class="attendance__data__input" type="text" name="rest_start[]" value="">～
-                                    <input class="attendance__data__input" type="text" name="rest_end[]" value="">
-                                </div>
-                            </td>
-                        </tr>
-                    @endif
-                </tr>
+                        @else
+                            <th class="attendance-detail_label">休憩{{ $index + 1 }}</th>
+                        @endif
+                        <td class="attendance__data">
+                            <div class="attendance__data__rest">
+                                <input class="attendance__data__input" type="text" name="rest_start[]" value="{{ $rest->rest_start ? \Carbon\Carbon::parse($rest->rest_start)->format('H:i') : '' }}">～
+                                <input class="attendance__data__input" type="text" name="rest_end[]" value="{{ $rest->rest_end ? \Carbon\Carbon::parse($rest->rest_end)->format('H:i') : '' }}">
+                            </div>
+                            <div class="detail__error-message">
+                                @if ($errors->has('rest_start.' . $index))
+                                    <p class="detail__error-message-rest_start">{{$errors->first('rest_start.' . $index)}}</p>
+                                @endif
+                                @if ($errors->has('rest_end.' . $index))
+                                    <p class="detail__error-message-rest_end">{{$errors->first('rest_end.' . $index)}}</p>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
+
+                {{-- 休憩がない場合の空の入力欄 --}}
+                @if ($rests->isEmpty())
+                    <tr>
+                        <th class="attendance-detail_label">休憩</th>
+                        <td class="attendance__data">
+                            <div class="attendance__data__rest">
+                                <input class="attendance__data__input" type="text" name="rest_start[]" value="">～
+                                <input class="attendance__data__input" type="text" name="rest_end[]" value="">
+                            </div>
+                        </td>
+                    </tr>
+                @endif
+
                 <tr>
                     <th class="attendance-detail_label">備考</th>
                     <td class="attendance__data">
-                        <textarea class="attendance__data__text" name="remarks"></textarea>
-                        <p class="remarks__error-message">
+                        <textarea class="attendance__data__text" name="remarks">{{ old('remarks', $attendance->remarks) }}</textarea>
+                        <p class="detail__error-message">
                             @error('remarks')
                                 {{ $message }}
                             @enderror

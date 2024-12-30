@@ -58,8 +58,8 @@ class User extends Authenticatable
     }
 
     // 申請とのリレーション (1対多)
-    public function requests()
+    public function applications()
     {
-        return $this->hasMany(Request::class);
+        return $this->hasMany(Application::class);
     }
 }

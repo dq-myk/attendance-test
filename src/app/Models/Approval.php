@@ -14,8 +14,8 @@ class Approval extends Model
     ];
 
     // 申請とのリレーション (1対1)
-    public function request()
+    public function application()
     {
-        return $this->belongsTo(Requests::class);
+        return $this->belongsTo(Application::class);
     }
 }
