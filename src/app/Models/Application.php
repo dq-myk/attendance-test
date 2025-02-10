@@ -16,7 +16,7 @@ class Application extends Model
     // ユーザーとのリレーション (多対1)
     public function user()
     {
-        return $this->belongsTo(User::class, 'admin_id');
+        return $this->belongsTo(User::class);
     }
 
     // 承認とのリレーション (1対1)

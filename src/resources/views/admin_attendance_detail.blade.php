@@ -9,7 +9,7 @@
         <nav class="header-nav">
             <a class="header__link" href="/admin/attendance/list">勤怠一覧</a>
             <a class="header__link" href="/admin/staff/list">スタッフ一覧</a>
-            <a class="header__link" href="/stamp_correction_request/list">申請一覧</a>
+            <a class="header__link" href="/request/list">申請一覧</a>
             <form action="/logout" method="post">
             @csrf
                 <input class="header__link" type="submit" value="ログアウト">
@@ -21,7 +21,7 @@
 @section('content')
 <div class="attendance-detail__group">
     <h1>勤怠詳細</h1>
-    <form action="/attendance/{{ $attendance->id }}" method="GET">
+    <form action="/admin/attendance/{{ $attendance->id }}" method="GET">
         @csrf
         <div class="attendance-detail__table">
             <table class="attendance-detail">

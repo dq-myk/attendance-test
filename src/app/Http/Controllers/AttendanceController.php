@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use App\Models\Attendance;
 use App\Models\Rest;
 use App\Models\Application;
@@ -147,50 +148,87 @@ class AttendanceController extends Controller
         return view('attendance_detail', compact('attendance', 'rests', 'year', 'monthDay'));
     }
 
+    public function update(ApplicationRequest $request, $id)
+    {
+        $attendance = Attendance::findOrFail($id);
 
-    // スタッフ勤怠情報修正、申請
-    // public function update(ApplicationRequest $request, $id)
-    // {
-    //     $validated = $request->validated();
+        // バリデーション済みデータ取得
+        $validated = $request->validated();
 
-    //     // 既存の勤怠情報を取得
-    //     $attendance = Attendance::findOrFail($id);
+        // 年の「年」表記を削除
+        $year = preg_replace('/[^0-9]/', '', $request->year); 
 
-    //     // 年と月日を結合して日付に変換
-    //     $date = $request->year . '-' . $request->month_day;  // 'year-month_day' の形式で結合
-    //     $attendance->date = \Carbon\Carbon::createFromFormat('Y-m-d', $date);  // 日付として変換して保存
+        // `02月07日` のような形式を `02-07` に変換
+        preg_match('/(\d{1,2})月(\d{1,2})日/', $request->month_day, $matches);
 
-    //     // 出勤・退勤時刻の更新
-    //     $attendance->clock_in = \Carbon\Carbon::createFromFormat('H:i', $request->clock_in);
-    //     $attendance->clock_out = \Carbon\Carbon::createFromFormat('H:i', $request->clock_out);
+        if (count($matches) !== 3) {
+            throw new \Exception("Invalid month_day format: {$request->month_day}");
+        }
 
-    //     // 休憩時間を保存（Restsテーブルの更新）
-    //     if ($request->has('rest_start') && $request->has('rest_end')) {
-    //         foreach ($request->rest_start as $index => $restStart) {
-    //             $rest = $attendance->rests()->where('id', $index + 1)->first();
-    //             if ($rest) {
-    //                 $rest->rest_start = \Carbon\Carbon::createFromFormat('H:i', $restStart);
-    //                 $rest->rest_end = \Carbon\Carbon::createFromFormat('H:i', $request->rest_end[$index]);
-    //                 $rest->save();
-    //             }
-    //         }
-    //     }
+        $month = str_pad($matches[1], 2, '0', STR_PAD_LEFT); // 2桁にする
+        $day = str_pad($matches[2], 2, '0', STR_PAD_LEFT);   // 2桁にする
 
-    //     // 備考を更新
-    //     if ($request->has('remarks')) {
-    //         $attendance->remarks = $request->remarks;
-    //     }
+        $date = "$year-$month-$day";
 
-    //     // 出勤情報を保存
-    //     $attendance->save();
+        // `$date` の形式をチェック
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            throw new \Exception("Invalid date format: {$date}");
+        }
 
-    //     // 申請処理を applications テーブルに保存
-    //     $application = new Application();  // Application モデルを使用して新しい申請データを作成
-    //     $application->attendance_id = $attendance->id;  // 申請に関連する勤怠IDを設定
-    //     $application->admin_id = auth()->user()->id;  // admin_id を使用して現在のユーザーIDを設定
-    //     $application->status = '承認待ち';  // 申請のステータスを設定
-    //     $application->save();  // 申請データを保存
+        // `date` カラムに保存
+        $attendance->date = \Carbon\Carbon::createFromFormat('Y-m-d', $date);
+        $attendance->save();
 
-    //     return redirect('/stamp_correction_request/list');
-    // }
+        // 勤怠データ更新
+        $attendance->update([
+            'clock_in' => $validated['clock_in'],
+            'clock_out' => $validated['clock_out'],
+        ]);
+
+        // 休憩データの削除と再登録
+        $attendance->rests()->delete();
+
+        if (!empty($validated['rest_start']) && !empty($validated['rest_end'])) {
+            foreach ($validated['rest_start'] as $index => $start) {
+                if (!empty($start) && !empty($validated['rest_end'][$index])) {
+                    $attendance->rests()->create([
+                        'rest_start' => $start,
+                        'rest_end' => $validated['rest_end'][$index],
+                    ]);
+                }
+            }
+        }
+
+        // Applications テーブルへの新規登録
+        Application::create([
+            'user_id' => auth()->id(), // ログイン中のユーザーのIDをセット
+            'date' => now()->toDateString(), // 申請日
+            'status' => '承認待ち',
+            'remarks' => $request->remarks,
+        ]);
+
+        return redirect('/request/list');
+    }
+
+    //申請状況確認
+    public function requestShow(Request $request)
+{
+    $tab = $request->query('tab', 'wait');
+
+    $query = Application::query();
+
+    if ($tab === 'wait') {
+        $query->where('status', '承認待ち');
+    } elseif ($tab === 'complete') {
+        $query->where('status', '承認済み');
+    }
+
+    $applications = $query->get();
+
+    return view('request_list', [
+        'attendances' => $applications,
+        'tab' => $tab,
+    ]);
+}
+
 }

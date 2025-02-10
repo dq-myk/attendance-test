@@ -9,7 +9,7 @@
         <nav class="header-nav">
             <a class="header__link" href="/admin/attendance/list">勤怠一覧</a>
             <a class="header__link" href="/admin/staff/list">スタッフ一覧</a>
-            <a class="header__link" href="/stamp_correction_request/list">申請一覧</a>
+            <a class="header__link" href="/request/list">申請一覧</a>
             <form action="/logout" method="post">
             @csrf
                 <input class="header__link" type="submit" value="ログアウト">
@@ -60,7 +60,7 @@
                     {{ gmdate("H:i", $attendance->workTimeExcludingRest * 60) }}
                 </td>
                 <td>
-                    <a class = "attendance__data detail" href="/attendance/{{ $attendance->id }}">詳細</a>
+                    <a class = "attendance__data detail" href="/admin/attendance/{{ $attendance->id }}">詳細</a>
                 </td>
             </tr>
             @endforeach

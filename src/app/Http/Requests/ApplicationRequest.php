@@ -13,7 +13,7 @@ class ApplicationRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,12 +24,14 @@ class ApplicationRequest extends FormRequest
     public function rules()
     {
         return [
-            'clock_in' => 'required|date|before:end_time',
-            'clock_out' => 'required|date|after:start_time',
-            'rest_start' => 'nullable|date|after:start_time|before:end_time',
-            'rest_end' => 'nullable|date|after:break_start|before:end_time',
-            'remarks' => 'required|max:255',
-        ];
+        'clock_in' => 'required|date_format:H:i',
+        'clock_out' => 'required|date_format:H:i|after:clock_in',
+        'rest_start' => 'nullable|array',
+        'rest_start.*' => 'nullable|date_format:H:i|after:clock_in|before:clock_out',
+        'rest_end' => 'nullable|array',
+        'rest_end.*' => 'nullable|date_format:H:i|after:rest_start.*|before:clock_out',
+        'remarks' => 'required|max:255',
+    ];
     }
 
     public function messages()

@@ -9,7 +9,7 @@
         <nav class="header-nav">
             <a class="header__link" href="/attendance">勤怠</a>
             <a class="header__link" href="/attendance/list">勤怠一覧</a>
-            <a class="header__link" href="/stamp_correction_request/list">申請</a>
+            <a class="header__link" href="/request/list">申請</a>
             <form action="/logout" method="post">
             @csrf
                 <input class="header__link" type="submit" value="ログアウト">
@@ -19,35 +19,36 @@
 @endsection
 
 @section('content')
-    <h1>申請一覧</h1>
-    <div class="request__tab-menu">
-        <a href="/stamp_correction_request/list?tab=wait" class="request__tab request__tab__wait {{ $tab == 'wait' ? 'active' : '' }}">承認待ち</a>
-        <a href="/mypage?tab=complete" class="request__tab request__tab__complete {{ $tab == 'complete' ? 'active' : '' }}">承認済み</a>
+    <div class="tab__group">
+        <h1>申請一覧</h1>
+        <div class="request__tab-menu">
+            <a href="/stamp_correction_request/list?tab=wait" class="request__tab request__tab__wait {{ $tab == 'wait' ? 'active' : '' }}">承認待ち</a>
+            <a href="/mypage?tab=complete" class="request__tab request__tab__complete {{ $tab == 'complete' ? 'active' : '' }}">承認済み</a>
+        </div>
     </div>
 
     <div class="request__group">
-
-        <table class="request">
+        <table class="request_table">
             <thead>
-                <tr class = "request__row">
-                    <th class = "request_label">状態</th>
-                    <th class = "request_label">名前</th>
-                    <th class = "request_label">対象日時</th>
-                    <th class = "request_label">申請理由</th>
-                    <th class = "request_label">申請日</th>
-                    <th class = "request_label">詳細</th>
+                <tr class="request__row">
+                    <th class="request_label">状態</th>
+                    <th class="request_label">名前</th>
+                    <th class="request_label">対象日時</th>
+                    <th class="request_label">申請理由</th>
+                    <th class="request_label">申請日</th>
+                    <th class="request_label">詳細</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($attendances as $attendance)
-                <tr class = "request__row">
-                    <td class = "request__data">承認待ち</td>
-                    <td class = "request__data">{{ $attendance->user->name }}</td>
-                    <td class = "request__data">{{ $attendance->date }}</td>
-                    <td class="request__data">{{ $request->remarks }}</td>
-                    <td class="request__data">{{ $request->date }}</td>
+                @foreach($attendances as $application)
+                <tr class="request__row">
+                    <td class="request__data">{{ $application->status }}</td>
+                    <td class="request__data">{{ $application->user->name }}</td>
+                    <td class="request__data">{{ \Carbon\Carbon::parse($application->date)->format('Y/m/d') }}</td>
+                    <td class="request__data">{{ $application->remarks }}</td>
+                    <td class="request__data">{{ \Carbon\Carbon::parse($application->created_at)->format('Y/m/d') }}</td>
                     <td>
-                        <a class = "request__data detail" href="/attendance/{{ $attendance->id }}">詳細</a>
+                        <a class="request__data detail" href="/attendance/{{ $attendance->id }}">詳細</a>
                     </td>
                 </tr>
                 @endforeach

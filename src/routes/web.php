@@ -27,7 +27,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/attendance/end', [AttendanceController::class, 'endWork']);
     Route::get('/attendance/list', [AttendanceController::class, 'listShow']);
     Route::get('/attendance/{id}', [AttendanceController::class, 'detail']);
-    // Route::put('/attendance/{id}', [AttendanceController::class, 'update']);
+    Route::put('/attendance/{id}', [AttendanceController::class, 'update']);
+    Route::get('/request/list', [AttendanceController::class, 'requestShow']);
 
     Route::post('/attendance/rest-start', [RestController::class, 'startRest']);
     Route::post('/attendance/rest-end', [RestController::class, 'endRest']);
@@ -36,7 +37,7 @@ Route::middleware('auth')->group(function () {
 
     //管理者
     Route::get('/admin/attendance/list', [AdminAttendanceController::class, 'adminList']);
-    Route::get('/attendance/{id}', [AdminAttendanceController::class, 'adminDetail']);
+    Route::get('/admin/attendance/{id}', [AdminAttendanceController::class, 'adminDetail']);
 });
 
 

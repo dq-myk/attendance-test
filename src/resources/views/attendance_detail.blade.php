@@ -9,7 +9,7 @@
         <nav class="header-nav">
             <a class="header__link" href="/attendance">勤怠</a>
             <a class="header__link" href="/attendance/list">勤怠一覧</a>
-            <a class="header__link" href="/stamp_correction_request/list">申請</a>
+            <a class="header__link" href="/request/list">申請</a>
             <form action="/logout" method="post">
             @csrf
                 <input class="header__link" type="submit" value="ログアウト">
@@ -19,6 +19,17 @@
 @endsection
 
 @section('content')
+
+@if($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
 <div class="attendance-detail__group">
     <h1>勤怠詳細</h1>
     <form action="/attendance/{{ $attendance->id }}" method="POST">
@@ -40,9 +51,8 @@
                 <tr>
                     <th class="attendance-detail_label">出勤・退勤</th>
                     <td class="attendance__data">
-                        <input class="attendance__data__input" type="text" name="clock_in" value="{{ \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') }}">～
-                        <input class="attendance__data__input" type="text" name="clock_out" value="{{ \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') }}">
-                        <div class="detail__error-message">
+                        <input class="attendance__data__input" type="time" name="clock_in" value="{{ $attendance->clock_in ? \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') : '' }}">～
+                        <input class="attendance__data__input" type="time" name="clock_out" value="{{ $attendance->clock_out ? \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') : '' }}">
                             @if ($errors->has('clock_in'))
                                 <p class="detail__error-message-clock_in">{{$errors->first('clock_in')}}</p>
                             @endif
@@ -61,8 +71,8 @@
                         @endif
                         <td class="attendance__data">
                             <div class="attendance__data__rest">
-                                <input class="attendance__data__input" type="text" name="rest_start[]" value="{{ $rest->rest_start ? \Carbon\Carbon::parse($rest->rest_start)->format('H:i') : '' }}">～
-                                <input class="attendance__data__input" type="text" name="rest_end[]" value="{{ $rest->rest_end ? \Carbon\Carbon::parse($rest->rest_end)->format('H:i') : '' }}">
+                                <input class="attendance__data__input" type="time" name="rest_start[]" value="{{ $rest->rest_start ? \Carbon\Carbon::parse($rest->rest_start)->format('H:i') : '' }}">～
+                                <input class="attendance__data__input" type="time" name="rest_end[]" value="{{ $rest->rest_end ? \Carbon\Carbon::parse($rest->rest_end)->format('H:i') : '' }}">
                             </div>
                             <div class="detail__error-message">
                                 @if ($errors->has('rest_start.' . $index))
@@ -82,8 +92,8 @@
                         <th class="attendance-detail_label">休憩</th>
                         <td class="attendance__data">
                             <div class="attendance__data__rest">
-                                <input class="attendance__data__input" type="text" name="rest_start[]" value="">～
-                                <input class="attendance__data__input" type="text" name="rest_end[]" value="">
+                                <input class="attendance__data__input" type="time" name="rest_start[]" value="{{ $rest->rest_start ? \Carbon\Carbon::parse($rest->rest_start)->format('H:i') : '' }}">～
+                                <input class="attendance__data__input" type="time" name="rest_end[]" value="{{ $rest->rest_end ? \Carbon\Carbon::parse($rest->rest_end)->format('H:i') : '' }}">
                             </div>
                         </td>
                     </tr>
