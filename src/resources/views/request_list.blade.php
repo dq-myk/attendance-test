@@ -48,7 +48,7 @@
                     <td class="request__data">{{ $application->remarks }}</td>
                     <td class="request__data">{{ \Carbon\Carbon::parse($application->created_at)->format('Y/m/d') }}</td>
                     <td>
-                        <a class="request__data detail" href="/attendance/{{ $attendance->id }}">詳細</a>
+                        <a class="request__data detail" href="/attendance/{{ $application->attendance_id }}">詳細</a>
                     </td>
                 </tr>
                 @endforeach

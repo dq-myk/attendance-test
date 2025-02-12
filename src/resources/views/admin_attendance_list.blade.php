@@ -60,7 +60,7 @@
                     {{ gmdate("H:i", $attendance->workTimeExcludingRest * 60) }}
                 </td>
                 <td>
-                    <a class = "attendance__data detail" href="/admin/attendance/{{ $attendance->id }}">詳細</a>
+                    <a class = "attendance__data detail" href="/attendance/{{ $attendance->id }}">詳細</a>
                 </td>
             </tr>
             @endforeach

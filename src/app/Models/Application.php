@@ -24,4 +24,10 @@ class Application extends Model
     {
         return $this->hasOne(Approvals::class);
     }
+
+    // 勤怠とのリレーション (多対1)
+    public function attendance()
+    {
+        return $this->belongsTo(Attendance::class);
+    }
 }

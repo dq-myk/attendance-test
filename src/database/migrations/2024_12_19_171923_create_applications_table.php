@@ -16,6 +16,7 @@ class CreateApplicationsTable extends Migration
         Schema::create('applications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('attendance_id')->constrained()->cascadeOnDelete();
             $table->foreignId('admin_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->date('date');
             $table->string('status');

@@ -24,4 +24,10 @@ class Attendance extends Model
     {
         return $this->hasMany(Rest::class);
     }
+
+    // 申請とのリレーション (1対多)
+    public function applications()
+    {
+        return $this->hasMany(Application::class);
+    }
 }

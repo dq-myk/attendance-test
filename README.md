@@ -18,15 +18,23 @@
 ### 1. Docker ビルド
 
 1. [git clone リンク](https://github.com/coachtech-material/laravel-docker-template)
-2. DockerDesktop アプリ起動
+2. DockerDesktop アプリを起動
 3. docker-compose up -d --build を実行
+4. メール認証設定
+- Dockerがインストールされている場合は、以下のコマンドでMailHogを起動できます。  
+  他のプロジェクトで既にmailhogが存在している場合は、「mailhog2」など名前を変更して下さい。
+```docker
+docker run -d --name mailhog -p 1025:1025 -p 8025:8025 mailhog/mailhog
+```
+
+
 
 ### 2. Laravel の設定
 
 1. docker-compose exec php bash コマンド実行
 2. composer install にてパッケージのインストール
 3. 「.env.example」ファイルを複製後 「.env」へ名前を変更
-4. データベース接続の為.env へ以下を設定
+4. データベース接続とメール認証設定の為.env へ以下を設定
 
 ```text
 DB_CONNECTION=mysql
@@ -36,6 +44,28 @@ DB_DATABASE=laravel_db
 DB_USERNAME=laravel_user
 DB_PASSWORD=laravel_pass
 ```
+```text
+MAIL_MAILER=smtp
+MAIL_HOST=host.docker.internal
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS=staff@example.com
+MAIL_FROM_NAME="${APP_NAME}"
+```
+- MailHogとLaravelが同じDockerネットワーク内にある場合は、MAIL_HOST=mailhogにします。
+- mailhogアクセス先 : http://localhost:8025/
+
+### テストアカウント
+      name: 管理者(ログイン時に使用)  
+      email: admin@example.com  
+      password: password  
+      -------------------------
+      name: スタッフ(会員登録、ログインに使用)  
+      email: staff@example.com  
+      password: password  
+      -------------------------
 
 5. アプリケーションキーの作成
 
@@ -63,7 +93,6 @@ php artisan migrate
 ```bash
 php artisan db:seed
 ```
-
 ### 3. HTML・CSS にて各ページの作成
 
 - 会員登録画面【一般ユーザー】(/register)
@@ -80,6 +109,8 @@ php artisan db:seed
 - 申請一覧画面【管理者】(/stamp_correction_request/list)
 - 修正申請承認画面【管理者】  
    (/stamp_correction_request/approve/{attendance_correct_request})
+
+
 
 ### 4. ER 図の作成
 

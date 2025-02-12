@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use App\Models\Attendance;
 use App\Models\Rest;
 use App\Models\Application;
@@ -148,15 +147,15 @@ class AttendanceController extends Controller
         return view('attendance_detail', compact('attendance', 'rests', 'year', 'monthDay'));
     }
 
+    //スタッフ勤怠詳細修正
     public function update(ApplicationRequest $request, $id)
     {
         $attendance = Attendance::findOrFail($id);
 
-        // バリデーション済みデータ取得
         $validated = $request->validated();
 
         // 年の「年」表記を削除
-        $year = preg_replace('/[^0-9]/', '', $request->year); 
+        $year = preg_replace('/[^0-9]/', '', $request->year);
 
         // `02月07日` のような形式を `02-07` に変換
         preg_match('/(\d{1,2})月(\d{1,2})日/', $request->month_day, $matches);
@@ -165,27 +164,23 @@ class AttendanceController extends Controller
             throw new \Exception("Invalid month_day format: {$request->month_day}");
         }
 
-        $month = str_pad($matches[1], 2, '0', STR_PAD_LEFT); // 2桁にする
-        $day = str_pad($matches[2], 2, '0', STR_PAD_LEFT);   // 2桁にする
+        $month = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+        $day = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
 
         $date = "$year-$month-$day";
 
-        // `$date` の形式をチェック
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
             throw new \Exception("Invalid date format: {$date}");
         }
 
-        // `date` カラムに保存
         $attendance->date = \Carbon\Carbon::createFromFormat('Y-m-d', $date);
         $attendance->save();
 
-        // 勤怠データ更新
         $attendance->update([
             'clock_in' => $validated['clock_in'],
             'clock_out' => $validated['clock_out'],
         ]);
 
-        // 休憩データの削除と再登録
         $attendance->rests()->delete();
 
         if (!empty($validated['rest_start']) && !empty($validated['rest_end'])) {
@@ -199,36 +194,41 @@ class AttendanceController extends Controller
             }
         }
 
-        // Applications テーブルへの新規登録
         Application::create([
             'user_id' => auth()->id(), // ログイン中のユーザーのIDをセット
+            'attendance_id' => $attendance->id,
             'date' => now()->toDateString(), // 申請日
             'status' => '承認待ち',
             'remarks' => $request->remarks,
         ]);
 
-        return redirect('/request/list');
+        return redirect('/stamp_correction_request/list');
     }
 
-    //申請状況確認
-    public function requestShow(Request $request)
-{
-    $tab = $request->query('tab', 'wait');
+    //スタッフ申請一覧確認
+    public function staffList(Request $request)
+    {
+        $tab = $request->query('tab', 'wait'); // タブの選択（承認待ちなど）
 
-    $query = Application::query();
+        $user = Auth::user(); // ログインユーザーを取得
 
-    if ($tab === 'wait') {
-        $query->where('status', '承認待ち');
-    } elseif ($tab === 'complete') {
-        $query->where('status', '承認済み');
+        // ユーザーがスタッフか確認
+        if ($user->isStaff()) {
+            // スタッフ用の申請一覧を取得
+            $applications = Application::where('user_id', $user->id)
+                ->when($tab === 'wait', function ($query) {
+                    return $query->where('status', '承認待ち');
+                })
+                ->when($tab === 'complete', function ($query) {
+                    return $query->where('status', '承認済み');
+                })
+                ->get();
+
+            return view('request_list', [
+                'attendances' => $applications,
+                'tab' => $tab,
+            ]);
+        }
     }
-
-    $applications = $query->get();
-
-    return view('request_list', [
-        'attendances' => $applications,
-        'tab' => $tab,
-    ]);
-}
 
 }

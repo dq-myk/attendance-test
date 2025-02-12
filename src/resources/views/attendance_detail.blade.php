@@ -19,17 +19,6 @@
 @endsection
 
 @section('content')
-
-@if($errors->any())
-    <div class="alert alert-danger">
-        <ul>
-            @foreach($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
-
 <div class="attendance-detail__group">
     <h1>勤怠詳細</h1>
     <form action="/attendance/{{ $attendance->id }}" method="POST">
@@ -92,8 +81,8 @@
                         <th class="attendance-detail_label">休憩</th>
                         <td class="attendance__data">
                             <div class="attendance__data__rest">
-                                <input class="attendance__data__input" type="time" name="rest_start[]" value="{{ $rest->rest_start ? \Carbon\Carbon::parse($rest->rest_start)->format('H:i') : '' }}">～
-                                <input class="attendance__data__input" type="time" name="rest_end[]" value="{{ $rest->rest_end ? \Carbon\Carbon::parse($rest->rest_end)->format('H:i') : '' }}">
+                                <input class="attendance__data__input" type="time" name="rest_start[]" value="">～
+                                <input class="attendance__data__input" type="time" name="rest_end[]" value="">
                             </div>
                         </td>
                     </tr>
