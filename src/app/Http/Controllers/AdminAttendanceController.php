@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Attendance;
 use App\Models\Rest;
 use App\Models\Application;
+use App\Models\User;
 use App\Http\Requests\ApplicationRequest;
 use Carbon\Carbon;
 
@@ -69,6 +70,75 @@ class AdminAttendanceController extends Controller
         }
     }
 
+    //管理者スタッフ一覧表示
+    public function adminStaffList()
+    {
+        // roleカラムが 'admin' 以外のユーザーを取得
+        $users = User::where('role', '!=', 'admin')
+                        ->select('id', 'name', 'email')
+                        ->get();
+
+        // admin_staff_list.blade.php にデータを渡す
+        return view('admin_staff_list', compact('users'));
+    }
+
+    //管理者スタッフ別勤怠一覧画面表示
+    public function adminAttendanceStaff(Request $request, $id)
+    {
+        $user = Auth::user();
+        if ($user->isAdmin()) {
+
+            $user = User::findOrFail($id);
+
+            try {
+                $month = $request->query('month', Carbon::now()->month);
+            $year = $request->query('year', Carbon::now()->year);
+        } catch (\Exception $e) {
+            $month = Carbon::now()->month;
+            $year = Carbon::now()->year;
+        }
+
+        Carbon::setLocale('ja');
+
+        $attendances = Attendance::where('user_id', $user->id)
+            ->whereMonth('date', $month)
+            ->whereYear('date', $year)
+            ->get();
+
+        if ($attendances->isEmpty()) {
+            $attendances = collect();
+        }
+
+            foreach ($attendances as $attendance) {
+            $totalRestTime = 0;
+            $rests = isset($attendance->rests) ? $attendance->rests : [];
+
+            foreach ($rests as $rest) {
+                $restStart = Carbon::parse($rest->rest_start);
+                $restEnd = Carbon::parse($rest->rest_end);
+                $totalRestTime += $restStart->diffInMinutes($restEnd);
+            }
+
+            if (isset($attendance->clock_in) && isset($attendance->clock_out)) {
+                $clockIn = Carbon::parse($attendance->clock_in);
+                $clockOut = Carbon::parse($attendance->clock_out);
+                $workDuration = $clockIn->diffInMinutes($clockOut);
+
+                $workTimeExcludingRest = $workDuration - $totalRestTime;
+            } else {
+                $workTimeExcludingRest = null;
+            }
+
+            $attendance->totalRestTime = $totalRestTime;
+            $attendance->workTimeExcludingRest = $workTimeExcludingRest;
+            }
+                return view('admin_attendance_staff', compact('user', 'attendances', 'month', 'year'));
+            } else {
+                return redirect()->intended('/admin/login');
+            }
+        }
+
+
     //管理者勤怠詳細修正
     public function adminUpdate(ApplicationRequest $request, $id)
     {
@@ -121,40 +191,44 @@ class AdminAttendanceController extends Controller
             }
         }
 
-        // Applications テーブルへの新規登録
-        Application::create([
-            'user_id' => auth()->id(), // ログイン中のユーザーのIDをセット
-            'attendance_id' => $attendance->id,
-            'date' => now()->toDateString(), // 申請日
-            'status' => '承認待ち',
-            'remarks' => $request->remarks,
-        ]);
+        // Applications テーブル更新
+        Application::updateOrCreate(
+            ['attendance_id' => $attendance->id],
+            [
+                'user_id' => auth()->id(),
+                'date' => now()->toDateString(),
+                'status' => '承認待ち',
+                'remarks' => $request->remarks,
+            ]
+        );
 
-        return redirect('/admin/stamp_correction_request/list');
+        return redirect('/stamp_correction_request/list');
     }
 
-    //管理者申請一覧確認
-    public function adminList(Request $request)
+    //管理者承認画面表示
+    public function showApprove($application_id)
     {
-        $tab = $request->query('tab', 'wait'); // タブの選択（承認待ちなど）
+        $application = application::findOrFail($application_id);
+        $attendance = $application->attendance;
 
-        $user = Auth::user(); // ログインユーザーを取得
+        $date = Carbon::parse($attendance->date);
+        $year = $date->format('Y年');
+        $monthDay = $date->format('m月d日');
 
-        // ユーザーが管理者か確認
-        if ($user->isAdmin()) {
-            // 管理者用の申請一覧を取得（管理者は他のスタッフの申請も確認できる）
-            $applications = Application::when($tab === 'wait', function ($query) {
-                    return $query->where('status', '承認待ち');
-                })
-                ->when($tab === 'complete', function ($query) {
-                    return $query->where('status', '承認済み');
-                })
-                ->get();
+        $rests = $attendance->rests;
 
-            return view('request_list', [
-                'attendances' => $applications,
-                'tab' => $tab,
-            ]);
-        }
+        return view('admin_approve', compact('attendance', 'year', 'monthDay', 'rests'));
+    }
+
+    //管理者承認処理
+    public function adminApprove(Application $attendance_correct_request)
+    {
+         // 承認処理
+        $attendance_correct_request->status = '承認済み';
+        $attendance_correct_request->approved_at = now();
+        $attendance_correct_request->save();
+
+        // リダイレクト
+        return redirect('/admin/attendance/list');
     }
 }

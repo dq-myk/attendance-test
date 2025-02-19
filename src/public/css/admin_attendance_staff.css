@@ -33,7 +33,7 @@ span {
     color: #fff;
 }
 
-.attendance-list__group {
+.attendance_staff__group {
     width: 100%;
     height: 100%;
     background-color: #E1E1E1;
@@ -84,7 +84,7 @@ span {
     color: #737373;
 }
 
-.attendance-list {
+.attendance_staff {
     width: 70%;
     margin: 0 auto;
     border-collapse: separate;
@@ -94,13 +94,13 @@ span {
     overflow: hidden;
 }
 
-.attendance-list th,
-.attendance-list td {
+.attendance_staff th,
+.attendance_staff td {
     border-bottom: 2px solid #E1E1E1;
 }
 
-.attendance-list_label,
-.attendance__data {
+.attendance_staff_label,
+.attendance_staff__data {
     padding: 16px 8px;
     background-color: #fff;
     text-align: center;

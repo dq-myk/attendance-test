@@ -8,11 +8,12 @@ use Illuminate\Support\Facades\Auth;
 
 class StaffMiddleware
 {
-    public function handle(Request $request, Closure $next)
+    public function handle($request, Closure $next)
     {
-        if (Auth::check() && Auth::user()->role === 'staff') {
+        if (auth()->check() && auth()->user()->role === 'staff') {
             return $next($request);
         }
+
         return redirect('/login');
     }
 }

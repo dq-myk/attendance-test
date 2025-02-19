@@ -39,8 +39,8 @@ class ApplicationRequest extends FormRequest
         return [
             'clock_in.before' => '出勤時間もしくは退勤時間が不適切な値です',
             'clock_out.after' => '出勤時間もしくは退勤時間が不適切な値です',
-            'rest_start.after' => '休憩時間が勤務時間外です',
-            'rest_end.before' => '休憩時間が勤務時間外です',
+            'rest_start.*.after' => '休憩時間が勤務時間外です',
+            'rest_end.*.before' => '休憩時間が勤務時間外です',
             'remarks.required' => '備考を入力してください',
             'remarks.max' => '備考内容は255文字以内で入力してください',
         ];

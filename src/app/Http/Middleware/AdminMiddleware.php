@@ -8,13 +8,12 @@ use Illuminate\Support\Facades\Auth;
 
 class AdminMiddleware
 {
-    public function handle(Request $request, Closure $next)
+    public function handle($request, Closure $next)
     {
-        if (Auth::check() && Auth::user()->role === 'admin') {
+        if (auth()->check() && auth()->user()->role === 'admin') {
             return $next($request);
         }
 
         return redirect('/admin/login');
-
     }
 }

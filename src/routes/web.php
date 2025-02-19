@@ -29,7 +29,7 @@ Route::middleware('auth')->group(function () {
         ->where('id', '[0-9]+')
         ->name('attendance_detail');
     Route::put('/attendance/{id}', [AttendanceController::class, 'update']);
-    Route::get('/stamp_correction_request/list', [AttendanceController::class, 'staffList']);
+    Route::get('/stamp_correction_request/list', [AttendanceController::class, 'requestList']);
 
     Route::post('/attendance/rest-start', [RestController::class, 'startRest']);
     Route::post('/attendance/rest-end', [RestController::class, 'endRest']);
@@ -39,11 +39,15 @@ Route::middleware('auth')->group(function () {
 //管理者
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/attendance/list', [AdminAttendanceController::class, 'adminListShow']);
-    Route::get('/admin/attendance/{id}', [AttendanceController::class, 'adminDetail'])
+    Route::get('/admin/staff/list', [AdminAttendanceController::class, 'adminStaffList']);
+    Route::get('/admin/attendance/staff/{id}', [AdminAttendanceController::class, 'adminAttendanceStaff']);
+    Route::get('/admin/attendance/{id}', [AdminAttendanceController::class, 'adminDetail'])
         ->where('id', '[0-9]+')
         ->name('admin_attendance_detail');
     Route::put('/admin/attendance/{id}', [AdminAttendanceController::class, 'adminUpdate']);
-    Route::get('/admin/stamp_correction_request/list', [AdminAttendanceController::class, 'adminList']);
+    Route::get('/stamp_correction_request/approve/{attendance_correct_request}', [AdminAttendanceController::class, 'showApprove']);
+    Route::post('/stamp_correction_request/approve/{attendance_correct_request}', [AdminAttendanceController::class, 'adminApprove']);
+
 });
 
 

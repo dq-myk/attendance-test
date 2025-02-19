@@ -9,7 +9,7 @@
         <nav class="header-nav">
             <a class="header__link" href="/attendance">勤怠</a>
             <a class="header__link" href="/attendance/list">勤怠一覧</a>
-            <a class="header__link" href="/request/list">申請</a>
+            <a class="header__link" href="/stamp_correction_request/list">申請</a>
             <form action="/logout" method="post">
             @csrf
                 <input class="header__link" type="submit" value="ログアウト">
@@ -23,7 +23,7 @@
         <h1>申請一覧</h1>
         <div class="request__tab-menu">
             <a href="/stamp_correction_request/list?tab=wait" class="request__tab request__tab__wait {{ $tab == 'wait' ? 'active' : '' }}">承認待ち</a>
-            <a href="/mypage?tab=complete" class="request__tab request__tab__complete {{ $tab == 'complete' ? 'active' : '' }}">承認済み</a>
+            <a href="/stamp_correction_request/list?tab=complete" class="request__tab request__tab__complete {{ $tab == 'complete' ? 'active' : '' }}">承認済み</a>
         </div>
     </div>
 
