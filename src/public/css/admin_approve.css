@@ -91,23 +91,21 @@ input[type="time"] {
     margin: 10px 50px;
     font-size: 1.6rem;
     text-align: center;
-    border: 1px solid #E1E1E1;
-    border-radius: 4px;
+    border: none;
+    background: transparent;
+    outline: none;
 }
 
 .approve__data__text {
+    padding: 30px 0 0 25px;
     margin-left: 10px;
     width: 330px;
     height: 80px;
-    border: 1px solid #E1E1E1;
-    border-radius: 4px;
+    border: none;
+    background: transparent;
+    outline: none;
     font-size: 1.6rem;
     resize: none;
-}
-
-.detail__error-message {
-    color: #FF9494;
-    font-size: 1.6rem;
 }
 
 .approval {
@@ -118,10 +116,25 @@ input[type="time"] {
 
 .approval__button {
     padding: 8px 30px;
-    background-color: black;
-    color: white;
+    background-color: #000;
+    /* 通常のボタンの色 */
+    color: #fff;
     border: none;
     border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+/* .approval__button:hover {
+    background-color: #0056b3;
+    ホバー時の色
+} */
+
+.approval__button:disabled {
+    background-color: #696969;
+    /* 無効時の背景色 */
+    color: #fff;
+    /* 無効時の文字色 */
 }
 
 @media screen and (max-width: 850px) {

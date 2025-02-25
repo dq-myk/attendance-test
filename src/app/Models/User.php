@@ -58,8 +58,8 @@ class User extends Authenticatable
     }
 
     // 申請とのリレーション (1対多)
-    public function applications()
+    public function attendanceCorrectRequests()
     {
-        return $this->hasMany(Application::class);
+        return $this->hasMany(AttendanceCorrectRequest::class);
     }
 }

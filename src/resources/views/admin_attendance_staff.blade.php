@@ -59,17 +59,17 @@
         <tbody>
             @foreach($attendances as $attendance)
             <tr class = "attendance_staff__row">
-                <td class = "attendance_staff__data">{{ \Carbon\Carbon::parse($attendance->date)->translatedFormat('m/d (D)') }}</td>
-                <td class = "attendance_staff__data">{{ \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') }}</td>
-                <td class = "attendance_staff__data">{{ \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') }}</td>
+                <td class = "attendance_staff__data">{{ $attendance->date ? \Carbon\Carbon::parse($attendance->date)->translatedFormat('m/d (D)') : '' }}</td>
+                <td class = "attendance_staff__data">{{ $attendance->clock_in ? \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') : '' }}</td>
+                <td class = "attendance_staff__data">{{ $attendance->clock_out ? \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') : '' }}</td>
                 <td class="attendance_staff__data">
-                    {{ gmdate("H:i", $attendance->totalRestTime * 60) }}
+                    {{ ($attendance->totalRestTime ?? 0) > 0 ? gmdate("H:i", $attendance->totalRestTime * 60) : '' }}
                 </td>
                 <td class="attendance_staff__data">
-                    {{ gmdate("H:i", $attendance->workTimeExcludingRest * 60) }}
+                    {{ ($attendance->workTimeExcludingRest ?? 0) > 0 ? gmdate("H:i", $attendance->workTimeExcludingRest * 60) : '' }}
                 </td>
                 <td>
-                    <a class = "attendance_staff__data detail" href="/admin/attendance/staff/{{ $attendance->id }}">詳細</a>
+                    <a class = "attendance_staff__data detail" href="/admin/attendance/{{ $attendance->id }}">詳細</a>
                 </td>
             </tr>
             @endforeach

@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Attendance;
 use App\Models\Rest;
-use App\Models\Application;
+use App\Models\AttendanceCorrectRequest;
 use App\Models\User;
 use App\Http\Requests\ApplicationRequest;
 use Carbon\Carbon;
@@ -192,43 +192,34 @@ class AdminAttendanceController extends Controller
         }
 
         // Applications テーブル更新
-        Application::updateOrCreate(
-            ['attendance_id' => $attendance->id],
-            [
-                'user_id' => auth()->id(),
-                'date' => now()->toDateString(),
-                'status' => '承認待ち',
-                'remarks' => $request->remarks,
-            ]
-        );
+        // 最新の申請データを取得
+        $latestRequest = AttendanceCorrectRequest::where('attendance_id', $attendance->id)
+            ->latest() // created_at の降順で最新を取得
+            ->first(); // 1件のみ取得
+
+        // Applications テーブル更新（最新のデータがあれば更新、なければ作成）
+        if ($latestRequest) {
+            // 既存の最新データを更新
+            $latestRequest->update([
+                'user_id'  => $attendance->user_id,  // スタッフの user_id を保持
+                'admin_id' => auth()->id(),          // 管理者の user_id を admin_id にセット
+                'date'     => now()->toDateString(),
+                'status'   => '承認待ち',
+                'remarks'  => $request->remarks,
+            ]);
+        } else {
+            // 最新データがなければ新規作成
+            AttendanceCorrectRequest::create([
+                'attendance_id' => $attendance->id,
+                'user_id'  => $attendance->user_id,
+                'admin_id' => auth()->id(),
+                'date'     => now()->toDateString(),
+                'status'   => '承認待ち',
+                'remarks'  => $request->remarks,
+            ]);
+        }
 
         return redirect('/stamp_correction_request/list');
     }
 
-    //管理者承認画面表示
-    public function showApprove($application_id)
-    {
-        $application = application::findOrFail($application_id);
-        $attendance = $application->attendance;
-
-        $date = Carbon::parse($attendance->date);
-        $year = $date->format('Y年');
-        $monthDay = $date->format('m月d日');
-
-        $rests = $attendance->rests;
-
-        return view('admin_approve', compact('attendance', 'year', 'monthDay', 'rests'));
-    }
-
-    //管理者承認処理
-    public function adminApprove(Application $attendance_correct_request)
-    {
-         // 承認処理
-        $attendance_correct_request->status = '承認済み';
-        $attendance_correct_request->approved_at = now();
-        $attendance_correct_request->save();
-
-        // リダイレクト
-        return redirect('/admin/attendance/list');
-    }
 }

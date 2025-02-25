@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Attendance;
 use App\Models\Rest;
-use App\Models\Application;
+use App\Models\AttendanceCorrectRequest;
 use App\Http\Requests\ApplicationRequest;
 use Carbon\Carbon;
 
@@ -15,7 +15,7 @@ class AttendanceController extends Controller
     //勤怠画面表示
     public function index()
     {
-        $currentDate = Carbon::now()->format('Y年m月d日 ') . '(' . $this->weekday(Carbon::now()->format('D')) . ')';
+        $currentDate = Carbon::now()->format('Y年n月d日 ') . '(' . $this->weekday(Carbon::now()->format('D')) . ')';
         $currentTime = Carbon::now()->format('H:i');
 
         $attendance = Attendance::where('user_id', Auth::id())
@@ -136,14 +136,14 @@ class AttendanceController extends Controller
     // スタッフ勤怠詳細画面表示
     public function detail($id)
     {
-        $attendance = Attendance::with('rests', 'user', 'applications')->findOrFail($id);
+        $attendance = Attendance::with('rests', 'user', 'attendanceCorrectRequests')->findOrFail($id);
         $rests = $attendance->rests;
 
         // 最初の申請データを取得（1件目の申請を選択）
-        $application = $attendance->applications->first();
+        $attendanceCorrectRequest = $attendance->attendanceCorrectRequests->first();
 
         // ステータス判定 (未承認: 修正可, 承認待ち: 修正不可)
-        $isEditable = !$application || ($application && $application->status === '未承認');
+        $isEditable = !$attendanceCorrectRequest || ($attendanceCorrectRequest && $attendanceCorrectRequest->status === '未承認');
 
         // 日付フォーマット
         $date = Carbon::parse($attendance->date);
@@ -151,11 +151,11 @@ class AttendanceController extends Controller
         $monthDay = $date->format('m月d日');
 
         // 備考を取得
-        $remarks = $application ? $application->remarks : '';
+        $remarks = $attendanceCorrectRequest ? $attendanceCorrectRequest->remarks : '';
 
         // 休憩時間の表示ルール
         $restsToDisplay = [];
-        if ($application && $application->status === '承認待ち') {
+        if ($attendanceCorrectRequest && $attendanceCorrectRequest->status === '承認待ち') {
             // 休憩時間が1つしかない場合でも、2つ目を追加
             $restsToDisplay = $rests->take(2);
         } else {
@@ -163,7 +163,7 @@ class AttendanceController extends Controller
             $restsToDisplay = $rests->take(1);
         }
 
-        return view('attendance_detail', compact('attendance', 'rests', 'restsToDisplay', 'year', 'monthDay', 'isEditable', 'remarks', 'application'));
+        return view('attendance_detail', compact('attendance', 'rests', 'restsToDisplay', 'year', 'monthDay', 'isEditable', 'remarks', 'attendanceCorrectRequest'));
     }
 
     //スタッフ勤怠詳細修正
@@ -217,7 +217,7 @@ class AttendanceController extends Controller
                 }
             }
 
-            Application::updateOrCreate(
+            AttendanceCorrectRequest::updateOrCreate(
                 ['attendance_id' => $attendance->id],
                 [
                     'user_id' => auth()->id(),
@@ -230,47 +230,4 @@ class AttendanceController extends Controller
             return redirect('/stamp_correction_request/list');
         }
     }
-
-    //管理者用、スタッフ用申請一覧確認
-    public function requestList(Request $request)
-{
-    $tab = $request->query('tab', 'wait'); // タブの選択（承認待ちなど）
-    $user = Auth::user(); // ログインユーザーを取得
-
-    if ($user->isAdmin()) {
-        // 管理者の場合はすべての申請を取得（データがなくても空配列を渡す）
-        $applications = Application::when($tab === 'wait', function ($query) {
-                return $query->where('status', '承認待ち');
-            })
-            ->when($tab === 'complete', function ($query) {
-                return $query->where('status', '承認済み');
-            })
-            ->get() ?? collect(); // もしデータがなければ空のコレクションを渡す
-
-        return view('admin_request_list', [
-            'attendances' => $applications,
-            'tab' => $tab,
-        ]);
-    } elseif ($user->isStaff()) {
-        // スタッフの場合は自分の申請のみ取得（データがなくても空配列を渡す）
-        $applications = Application::where('user_id', $user->id)
-            ->when($tab === 'wait', function ($query) {
-                return $query->where('status', '承認待ち');
-            })
-            ->when($tab === 'complete', function ($query) {
-                return $query->where('status', '承認済み');
-            })
-            ->get() ?? collect(); // もしデータがなければ空のコレクションを渡す
-
-        return view('request_list', [
-            'attendances' => $applications,
-            'tab' => $tab,
-        ]);
-    }
-
-    // 権限がない場合、ログインページなどへリダイレクト
-    return redirect('/login');
-}
-
-
 }

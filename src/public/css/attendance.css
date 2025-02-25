@@ -57,7 +57,7 @@ a {
     margin-top: 20px;
 }
 
-.button {
+.attendance__btn {
     width: 200px;
     padding: 10px 20px;
     background-color: #000;
@@ -68,13 +68,19 @@ a {
     cursor: pointer;
 }
 
-.button:not(:last-child) {
-    margin-right: 10px;
+.rest__btn {
+    width: 200px;
+    padding: 10px 20px;
+    background-color: #fff;
+    font-size: 3.5rem;
+    color: #000;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
 }
 
-.button:hover {
-    background-color: #fff;
-    color: #000;
+.button:not(:last-child) {
+    margin-right: 10px;
 }
 
 .alert {

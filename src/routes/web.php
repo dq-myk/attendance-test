@@ -5,7 +5,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\RestController;
-use App\Http\Controllers\RrequestController;
+use App\Http\Controllers\RequestController;
 use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\AdminAttendanceController;
 
@@ -29,10 +29,11 @@ Route::middleware('auth')->group(function () {
         ->where('id', '[0-9]+')
         ->name('attendance_detail');
     Route::put('/attendance/{id}', [AttendanceController::class, 'update']);
-    Route::get('/stamp_correction_request/list', [AttendanceController::class, 'requestList']);
 
     Route::post('/attendance/rest-start', [RestController::class, 'startRest']);
     Route::post('/attendance/rest-end', [RestController::class, 'endRest']);
+
+    Route::get('/stamp_correction_request/list', [RequestController::class, 'requestList']);
 });
 
 
@@ -45,8 +46,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
         ->where('id', '[0-9]+')
         ->name('admin_attendance_detail');
     Route::put('/admin/attendance/{id}', [AdminAttendanceController::class, 'adminUpdate']);
-    Route::get('/stamp_correction_request/approve/{attendance_correct_request}', [AdminAttendanceController::class, 'showApprove']);
-    Route::post('/stamp_correction_request/approve/{attendance_correct_request}', [AdminAttendanceController::class, 'adminApprove']);
+
+    Route::get('/stamp_correction_request/approve/{attendance_correct_request}', [ApprovalController::class, 'showApprove']);
+    Route::post('/stamp_correction_request/approve/{attendance_correct_request}', [ApprovalController::class, 'adminApprove']);
 
 });
 

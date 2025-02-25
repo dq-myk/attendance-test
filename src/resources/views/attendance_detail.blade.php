@@ -33,16 +33,16 @@
                 <tr class="attendance-detail__row">
                     <th class="attendance-detail_label">日付</th>
                     <td class="attendance__data">
-                        <input class="attendance__data__input" type="text" name="year" value="{{ $year }}" {{ !$isEditable ? 'disabled' : '' }}>&nbsp;&nbsp;
-                        <input class="attendance__data__input" type="text" name="month_day" value="{{ $monthDay }}" {{ !$isEditable ? 'disabled' : '' }}>
+                        <input class="attendance__data__input {{ $attendanceCorrectRequest && $attendanceCorrectRequest->status === '承認待ち' ? 'no-border' : '' }}" type="text" name="year" value="{{ $year }}" {{ !$isEditable ? 'disabled' : '' }}>&nbsp;&nbsp;
+                        <input class="attendance__data__input {{ $attendanceCorrectRequest && $attendanceCorrectRequest->status === '承認待ち' ? 'no-border' : '' }}" type="text" name="month_day" value="{{ $monthDay }}" {{ !$isEditable ? 'disabled' : '' }}>
                     </td>
                 </tr>
                 <tr>
                     <th class="attendance-detail_label">出勤・退勤</th>
                     <td class="attendance__data">
-                        <input class="attendance__data__input" type="time" name="clock_in"
+                        <input class="attendance__data__input {{ $attendanceCorrectRequest && $attendanceCorrectRequest->status === '承認待ち' ? 'no-border' : '' }}" type="time" name="clock_in"
                             value="{{ old('clock_in', $attendance->clock_in ? \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') : '') }}" {{ !$isEditable ? 'disabled' : '' }}>～
-                        <input class="attendance__data__input" type="time" name="clock_out"
+                        <input class="attendance__data__input {{ $attendanceCorrectRequest && $attendanceCorrectRequest->status === '承認待ち' ? 'no-border' : '' }}" type="time" name="clock_out"
                             value="{{ old('clock_out', $attendance->clock_out ? \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') : '') }}" {{ !$isEditable ? 'disabled' : '' }}>
                         <div class="detail__error-message">
                             @if ($errors->has('clock_in'))
@@ -63,9 +63,9 @@
                         @endif
                         <td class="attendance__data">
                             <div class="attendance__data__rest">
-                                <input class="attendance__data__input" type="time" name="rest_start[]"
+                                <input class="attendance__data__input {{ $attendanceCorrectRequest && $attendanceCorrectRequest->status === '承認待ち' ? 'no-border' : '' }}" type="time" name="rest_start[]"
                                     value="{{ old('rest_start.' . $index, $rest ? \Carbon\Carbon::parse($rest->rest_start)->format('H:i') : '') }}" {{ !$isEditable ? 'disabled' : '' }}>～
-                                <input class="attendance__data__input" type="time" name="rest_end[]"
+                                <input class="attendance__data__input {{ $attendanceCorrectRequest && $attendanceCorrectRequest->status === '承認待ち' ? 'no-border' : '' }}" type="time" name="rest_end[]"
                                     value="{{ old('rest_end.' . $index, $rest ? \Carbon\Carbon::parse($rest->rest_end)->format('H:i') : '') }}" {{ !$isEditable ? 'disabled' : '' }}>
                             </div>
                             <div class="detail__error-message">
@@ -81,21 +81,13 @@
                 @endforeach
 
                 {{-- 承認待ちで休憩が1つだけの場合、2つ目の入力欄を追加 --}}
-                @if ($application && $application->status === '承認待ち' && count($restsToDisplay) < 2)
+                @if ($attendanceCorrectRequest && $attendanceCorrectRequest->status === '承認待ち' && count($restsToDisplay) < 2)
                     <tr>
                         <th class="attendance-detail_label">休憩2</th>
                         <td class="attendance__data">
                             <div class="attendance__data__rest">
-                                <input class="attendance__data__input" type="time" name="rest_start[]" value="{{ old('rest_start.1') }}" {{ !$isEditable ? 'disabled' : '' }}>～
-                                <input class="attendance__data__input" type="time" name="rest_end[]" value="{{ old('rest_end.1') }}" {{ !$isEditable ? 'disabled' : '' }}>
-                            </div>
-                            <div class="detail__error-message">
-                                @if ($errors->has('rest_start.1'))
-                                    <p class="detail__error-message-rest_start">{{ $errors->first('rest_start.1') }}</p>
-                                @endif
-                                @if ($errors->has('rest_end.1'))
-                                    <p class="detail__error-message-rest_end">{{ $errors->first('rest_end.1') }}</p>
-                                @endif
+                                <input class="attendance__data__input {{ $attendanceCorrectRequest && $attendanceCorrectRequest->status === '承認待ち' ? 'no-border' : '' }}" type="time" name="rest_start[]" value="{{ old('rest_start.1') }}" {{ !$isEditable ? 'disabled' : '' }}>～
+                                <input class="attendance__data__input {{ $attendanceCorrectRequest && $attendanceCorrectRequest->status === '承認待ち' ? 'no-border' : '' }}" type="time" name="rest_end[]" value="{{ old('rest_end.1') }}" {{ !$isEditable ? 'disabled' : '' }}>
                             </div>
                         </td>
                     </tr>
@@ -107,7 +99,7 @@
                         <th class="attendance-detail_label">休憩</th>
                         <td class="attendance__data"></td>
                     </tr>
-                    @if ($application && $application->status === '承認待ち')
+                    @if ($attendanceCorrectRequest && $attendanceCorrectRequest->status === '承認待ち')
                         <tr>
                             <th class="attendance-detail_label">休憩2</th>
                             <td class="attendance__data"></td>
@@ -115,23 +107,10 @@
                     @endif
                 @endif
 
-                {{-- 休憩がない場合の空の入力欄 --}}
-                @if ($rests->isEmpty())
-                    <tr>
-                        <th class="attendance-detail_label">休憩</th>
-                        <td class="attendance__data">
-                            <div class="attendance__data__rest">
-                                <input class="attendance__data__input" type="time" name="rest_start[]" value="" {{ !$isEditable ? 'disabled' : '' }}>～
-                                <input class="attendance__data__input" type="time" name="rest_end[]" value="" {{ !$isEditable ? 'disabled' : '' }}>
-                            </div>
-                        </td>
-                    </tr>
-                @endif
-
                 <tr>
                     <th class="attendance-detail_label">備考</th>
                     <td class="attendance__data">
-                        <textarea class="attendance__data__text" name="remarks" {{ !$isEditable ? 'disabled' : '' }}>{{ old('remarks',  $remarks) }}</textarea>
+                        <textarea class="attendance__data__text {{ $attendanceCorrectRequest && $attendanceCorrectRequest->status === '承認待ち' ? 'no-border' : '' }}" name="remarks" {{ !$isEditable ? 'disabled' : '' }}>{{ old('remarks',  $remarks) }}</textarea>
                         <p class="detail__error-message">
                             @error('remarks')
                                 {{ $message }}

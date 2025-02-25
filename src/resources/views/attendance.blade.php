@@ -27,21 +27,21 @@
         @if ($status === '勤務外' && !$isAlreadyCheckedIn)
             <form action="/attendance/start" method="POST">
                 @csrf
-                <button type="submit" class="button">出勤</button>
+                <button class = "attendance__btn" type="submit" class="button">出勤</button>
             </form>
         @elseif ($status === '出勤中')
             <form action="/attendance/end" method="POST">
                 @csrf
-                <button type="submit" class="button">退勤</button>
+                <button class = "attendance__btn" type="submit" class="button">退勤</button>
             </form>
-            <form action="/attendance/rest-start" method="POST">
+            <form class = "rest__btn" action="/attendance/rest-start" method="POST">
                 @csrf
                 <button type="submit" class="button">休憩入</button>
             </form>
         @elseif ($status === '休憩中')
             <form action="/attendance/rest-end" method="POST">
                 @csrf
-                <button type="submit" class="button">休憩戻</button>
+                <button class = "rest__btn" type="submit" class="button">休憩戻</button>
             </form>
         @endif
         @if (session('message'))

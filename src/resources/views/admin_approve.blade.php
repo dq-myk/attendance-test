@@ -21,8 +21,9 @@
 @section('content')
 <div class="approve__group">
     <h1>勤怠詳細</h1>
-    <form action="/stamp_correction_request/approve/{{ $attendance_correct_request->id }}" method="POST">
-    @csrf
+
+    <form action="/stamp_correction_request/approve/{{ $attendanceCorrectRequest->id }}" method="POST">
+        @csrf
         <div class="approve__table">
             <table class="approve">
                 <tr class="approve__row">
@@ -36,21 +37,18 @@
                         <input class="approve__data__input" type="text" name="month_day" value="{{ $monthDay }}" disabled>
                     </td>
                 </tr>
-                <tr>
+                <tr class="approve__row">
                     <th class="approve_label">出勤・退勤</th>
                     <td class="approve__data">
                         <input class="approve__data__input" type="time" name="clock_in" value="{{ old('clock_in', $attendance->clock_in ? \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') : '') }}" disabled>～
                         <input class="approve__data__input" type="time" name="clock_out" value="{{ old('clock_out', $attendance->clock_out ? \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') : '') }}" disabled>
                     </td>
                 </tr>
+
                 @foreach ($rests as $index => $rest)
-                    <tr>
-                        @if ($index == 0)
-                            <th class="approve_label">休憩</th>
-                        @else
-                            <th class="approve_label">休憩{{ $index + 1 }}</th>
-                        @endif
-                        <td class="attendance__data">
+                    <tr class="approve__row">
+                        <th class="approve_label">{{ $index == 0 ? '休憩' : '休憩' . ($index + 1) }}</th>
+                        <td class="approve__data">
                             <div class="approve__data__rest">
                                 <input class="approve__data__input" type="time" name="rest_start[]" value="{{ old('rest_start.' . $index, $rest->rest_start ? \Carbon\Carbon::parse($rest->rest_start)->format('H:i') : '') }}" disabled>～
                                 <input class="approve__data__input" type="time" name="rest_end[]" value="{{ old('rest_end.' . $index, $rest->rest_end ? \Carbon\Carbon::parse($rest->rest_end)->format('H:i') : '') }}" disabled>
@@ -58,9 +56,9 @@
                         </td>
                     </tr>
                 @endforeach
-                {{-- 休憩がない場合の空の入力欄 --}}
+
                 @if ($rests->isEmpty())
-                    <tr>
+                    <tr class="approve__row">
                         <th class="approve_label">休憩</th>
                         <td class="approve__data">
                             <div class="approve__data__rest">
@@ -70,15 +68,21 @@
                         </td>
                     </tr>
                 @endif
-                <tr>
+
+                <tr class="approve__row">
                     <th class="approve_label">備考</th>
                     <td class="approve__data">
-                        <textarea class="approve__data__text" name="remarks" disabled>{{ old('remarks', $attendance->remarks) }}</textarea>
+                        <textarea class="approve__data__text" name="remarks" disabled>{{ old('remarks', $remarks) }}</textarea>
                     </td>
                 </tr>
             </table>
+
             <div class="approval">
-                <button class="approval__button" type="submit">承認</button>
+                @if ($attendanceCorrectRequest->status === '承認済み')
+                    <button class="approval__button" type="button" disabled>承認済み</button>
+                @else
+                    <button class="approval__button" type="submit">承認</button>
+                @endif
             </div>
         </div>
     </form>

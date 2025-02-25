@@ -35,20 +35,20 @@
                         <th class="request_label">名前</th>
                         <th class="request_label">対象日時</th>
                         <th class="request_label">申請理由</th>
-                        <th class="request_label">申請日</th>
+                        <th class="request_label">申請日時</th>
                         <th class="request_label">詳細</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($attendances as $application)
+                    @foreach($attendances as $attendanceCorrectRequest)
                     <tr class="request__row">
-                        <td class="request__data">{{ $application->status }}</td>
-                        <td class="request__data">{{ $application->user->name }}</td>
-                        <td class="request__data">{{ \Carbon\Carbon::parse($application->date)->format('Y/m/d') }}</td>
-                        <td class="request__data">{{ $application->remarks }}</td>
-                        <td class="request__data">{{ \Carbon\Carbon::parse($application->created_at)->format('Y/m/d') }}</td>
+                        <td class="request__data">{{ $attendanceCorrectRequest->status }}</td>
+                        <td class="request__data">{{ $attendanceCorrectRequest->user->name }}</td>
+                        <td class="request__data">{{ \Carbon\Carbon::parse($attendanceCorrectRequest->date)->format('Y/m/d') }}</td>
+                        <td class="request__data">{{ $attendanceCorrectRequest->remarks }}</td>
+                        <td class="request__data">{{ \Carbon\Carbon::parse($attendanceCorrectRequest->created_at)->format('Y/m/d') }}</td>
                         <td>
-                            <a class="request__data detail" href="/stamp_correction_request/approve/{attendance_correct_request}'">詳細</a>
+                            <a class="request__data detail" href="/stamp_correction_request/approve/{{ $attendanceCorrectRequest->id }}">詳細</a>
                         </td>
                     </tr>
                     @endforeach
