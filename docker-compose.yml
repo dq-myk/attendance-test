@@ -39,16 +39,3 @@ services:
     ports:
       - 8080:80
 
-  mailhog:
-    image: mailhog/mailhog
-    container_name: mailhog2
-    ports:
-      - "1025:1025"  # SMTP port
-      - "8025:8025"  # Web UI port
-    networks:
-      - mailhog_network
-
-networks:
-  mailhog_network:
-    driver: bridge
-

@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AttendanceController;
@@ -8,6 +10,23 @@ use App\Http\Controllers\RestController;
 use App\Http\Controllers\RequestController;
 use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\AdminAttendanceController;
+
+// メール認証の通知を再送信
+Route::post('/email/verification-notification', function (Request $request) {
+    $request->user()->sendEmailVerificationNotification();
+    return back()->with('message', 'Verification link sent!');
+})->middleware(['auth'])->name('verification.send');
+
+// メール認証確認
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+    return redirect('/attendance');
+})->middleware(['auth', 'signed'])->name('verification.verify');
+
+// メール認証が必要なページ
+Route::get('/attendance', function () {
+    return view('/attendance');
+})->middleware(['auth', 'verified']);
 
 //スタッフ会員登録、ログイン
 Route::post('/register', [UserController::class, 'register']);
@@ -18,7 +37,7 @@ Route::get('/admin/login', [UserController::class, 'adminShow']);
 Route::post('/admin/login', [AuthenticatedSessionController::class, 'adminStore']);
 
 //スタッフ
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
 
     Route::get('/attendance', [AttendanceController::class, 'index']);

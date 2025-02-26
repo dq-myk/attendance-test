@@ -12,7 +12,6 @@ use App\Models\Attendance;
 use App\Models\Rest;
 use Carbon\Carbon;
 
-
 class UserController extends Controller
 {
     //ユーザー登録処理
@@ -26,7 +25,9 @@ class UserController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        return redirect('/login');
+        $user->sendEmailVerificationNotification();
+
+        return redirect()->route('login');
     }
 
     //管理者ログイン画面表示
@@ -36,3 +37,4 @@ class UserController extends Controller
     }
 
 }
+
