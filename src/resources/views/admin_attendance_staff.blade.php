@@ -75,5 +75,8 @@
             @endforeach
         </tbody>
     </table>
+    <div class="output">
+        <a class="output__button" href="{{ '/admin/attendance/staff/' . $user->id . '/output?year=' . $year . '&month=' . $month }}">CSV出力</a>
+    </div>
 </div>
 @endsection

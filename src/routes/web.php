@@ -65,6 +65,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         ->where('id', '[0-9]+')
         ->name('admin_attendance_detail');
     Route::put('/admin/attendance/{id}', [AdminAttendanceController::class, 'adminUpdate']);
+    Route::get('/admin/attendance/staff/{id}/output', [AdminAttendanceController::class, 'output']);
 
     Route::get('/stamp_correction_request/approve/{attendance_correct_request}', [ApprovalController::class, 'showApprove']);
     Route::post('/stamp_correction_request/approve/{attendance_correct_request}', [ApprovalController::class, 'adminApprove']);

@@ -113,6 +113,20 @@ span {
     font-weight: bold;
 }
 
+.output {
+    margin-top: 60px;
+    margin-right: 250px;
+    text-align: right;
+}
+
+.output__button {
+    padding: 8px 30px;
+    background-color: black;
+    color: white;
+    border: none;
+    border-radius: 4px;
+}
+
 
 
 @media screen and (max-width: 850px) {

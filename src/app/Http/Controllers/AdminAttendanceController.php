@@ -10,6 +10,7 @@ use App\Models\AttendanceCorrectRequest;
 use App\Models\User;
 use App\Http\Requests\ApplicationRequest;
 use Carbon\Carbon;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AdminAttendanceController extends Controller
 {
@@ -73,12 +74,10 @@ class AdminAttendanceController extends Controller
     //管理者スタッフ一覧表示
     public function adminStaffList()
     {
-        // roleカラムが 'admin' 以外のユーザーを取得
         $users = User::where('role', '!=', 'admin')
                         ->select('id', 'name', 'email')
                         ->get();
 
-        // admin_staff_list.blade.php にデータを渡す
         return view('admin_staff_list', compact('users'));
     }
 
@@ -144,40 +143,33 @@ class AdminAttendanceController extends Controller
     {
         $attendance = Attendance::findOrFail($id);
 
-        // バリデーション済みデータ取得
         $validated = $request->validated();
 
-        // 年の「年」表記を削除
         $year = preg_replace('/[^0-9]/', '', $request->year);
 
-        // `02月07日` のような形式を `02-07` に変換
         preg_match('/(\d{1,2})月(\d{1,2})日/', $request->month_day, $matches);
 
         if (count($matches) !== 3) {
             throw new \Exception("Invalid month_day format: {$request->month_day}");
         }
 
-        $month = str_pad($matches[1], 2, '0', STR_PAD_LEFT); // 2桁にする
-        $day = str_pad($matches[2], 2, '0', STR_PAD_LEFT);   // 2桁にする
+        $month = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+        $day = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
 
         $date = "$year-$month-$day";
 
-        // `$date` の形式をチェック
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
             throw new \Exception("Invalid date format: {$date}");
         }
 
-        // `date` カラムに保存
         $attendance->date = \Carbon\Carbon::createFromFormat('Y-m-d', $date);
         $attendance->save();
 
-        // 勤怠データ更新
         $attendance->update([
             'clock_in' => $validated['clock_in'],
             'clock_out' => $validated['clock_out'],
         ]);
 
-        // 休憩データの削除と再登録
         $attendance->rests()->delete();
 
         if (!empty($validated['rest_start']) && !empty($validated['rest_end'])) {
@@ -191,24 +183,19 @@ class AdminAttendanceController extends Controller
             }
         }
 
-        // Applications テーブル更新
-        // 最新の申請データを取得
         $latestRequest = AttendanceCorrectRequest::where('attendance_id', $attendance->id)
-            ->latest() // created_at の降順で最新を取得
-            ->first(); // 1件のみ取得
+            ->latest()
+            ->first();
 
-        // Applications テーブル更新（最新のデータがあれば更新、なければ作成）
         if ($latestRequest) {
-            // 既存の最新データを更新
             $latestRequest->update([
-                'user_id'  => $attendance->user_id,  // スタッフの user_id を保持
-                'admin_id' => auth()->id(),          // 管理者の user_id を admin_id にセット
+                'user_id'  => $attendance->user_id,
+                'admin_id' => auth()->id(),
                 'date'     => now()->toDateString(),
                 'status'   => '承認待ち',
                 'remarks'  => $request->remarks,
             ]);
         } else {
-            // 最新データがなければ新規作成
             AttendanceCorrectRequest::create([
                 'attendance_id' => $attendance->id,
                 'user_id'  => $attendance->user_id,
@@ -222,4 +209,74 @@ class AdminAttendanceController extends Controller
         return redirect('/stamp_correction_request/list');
     }
 
+    //スタッフ毎の勤怠一覧をCSV出力
+    public function output(Request $request, $id)
+{
+    $year = $request->query('year', now()->year);
+    $month = $request->query('month', now()->month);
+
+    // ユーザー名を取得
+    $user = User::find($id);
+    $userName = $user ? $user->name : '未登録ユーザー';
+
+    $attendances = Attendance::where('user_id', $id)
+        ->whereYear('date', $year)
+        ->whereMonth('date', $month)
+        ->with('rests')
+        ->get();
+
+    $response = new StreamedResponse(function () use ($attendances, $year, $month, $id, $userName) {
+        $handle = fopen('php://output', 'w');
+
+        // ユーザー名をヘッダーの上に追加
+        $userRow = ["スタッフ名: {$userName}"];
+        mb_convert_variables('SJIS-win', 'UTF-8', $userRow);
+        fputcsv($handle, $userRow);
+
+        // ヘッダー
+        $csvHeader = ['日付', '出勤', '退勤', '休憩', '合計'];
+        mb_convert_variables('SJIS-win', 'UTF-8', $csvHeader);
+        fputcsv($handle, $csvHeader);
+
+        foreach ($attendances as $attendance) {
+            $clockIn = $attendance->clock_in ? \Carbon\Carbon::parse($attendance->clock_in) : null;
+            $clockOut = $attendance->clock_out ? \Carbon\Carbon::parse($attendance->clock_out) : null;
+            $totalRestTime = 0;
+
+            if ($attendance->rests) {
+                foreach ($attendance->rests as $rest) {
+                    if ($rest->rest_start && $rest->rest_end) {
+                        $restStart = \Carbon\Carbon::parse($rest->rest_start);
+                        $restEnd = \Carbon\Carbon::parse($rest->rest_end);
+                        $totalRestTime += $restStart->diffInMinutes($restEnd);
+                    }
+                }
+            }
+
+            $workTimeExcludingRest = 0;
+            if ($clockIn && $clockOut) {
+                $workTimeExcludingRest = max($clockIn->diffInMinutes($clockOut) - $totalRestTime, 0);
+            }
+
+            $row = [
+                $attendance->date ? \Carbon\Carbon::parse($attendance->date)->format('Y/m/d') : '',
+                $clockIn ? $clockIn->format('H:i') : '',
+                $clockOut ? $clockOut->format('H:i') : '',
+                sprintf('%02d:%02d', floor($totalRestTime / 60), $totalRestTime % 60),
+                sprintf('%02d:%02d', floor($workTimeExcludingRest / 60), $workTimeExcludingRest % 60),
+            ];
+
+            mb_convert_variables('SJIS-win', 'UTF-8', $row);
+            fputcsv($handle, $row);
+        }
+
+        fclose($handle);
+    });
+
+    $fileName = "attendance_{$id}_{$year}_{$month}.csv";
+    $response->headers->set('Content-Type', 'text/csv; charset=Shift_JIS');
+    $response->headers->set('Content-Disposition', 'attachment; filename="'.$fileName.'"');
+
+    return $response;
+}
 }
