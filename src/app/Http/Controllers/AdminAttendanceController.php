@@ -107,7 +107,6 @@ class AdminAttendanceController extends Controller
         if ($attendances->isEmpty()) {
             $attendances = collect();
         }
-
             foreach ($attendances as $attendance) {
             $totalRestTime = 0;
             $rests = isset($attendance->rests) ? $attendance->rests : [];

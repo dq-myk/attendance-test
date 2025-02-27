@@ -27,6 +27,7 @@
         <server name="DB_DATABASE" value="laravel_db"/>
         <server name="DB_USERNAME" value="laravel_user"/>
         <server name="DB_PASSWORD" value="laravel_pass"/>
+        <server name="DB_PREFIX" value="test_"/>
         <server name="MAIL_MAILER" value="array"/>
         <server name="QUEUE_CONNECTION" value="sync"/>
         <server name="SESSION_DRIVER" value="array"/>

@@ -25,7 +25,7 @@ class AttendanceController extends Controller
         $status = $attendance ? $attendance->status : '勤務外';
 
         return view('attendance', [
-            'status' => $status,
+            'status' => session('status', '勤務外'),
             'currentDate' => $currentDate,
             'currentTime' => $currentTime,
             'isAlreadyCheckedIn' => $attendance && $attendance->status !== '退勤済',

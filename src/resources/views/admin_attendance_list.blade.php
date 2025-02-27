@@ -54,7 +54,7 @@
                 <td class = "attendance__data">{{ \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') }}</td>
                 <td class = "attendance__data">{{ \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') }}</td>
                 <td class="attendance__data">
-                    {{ gmdate("H:i", $attendance->totalRestTime * 60) }}
+                    {{ ($attendance->totalRestTime ?? 0) > 0 ? gmdate("H:i", $attendance->totalRestTime * 60) : '' }}
                 </td>
                 <td class="attendance__data">
                     {{ gmdate("H:i", $attendance->workTimeExcludingRest * 60) }}

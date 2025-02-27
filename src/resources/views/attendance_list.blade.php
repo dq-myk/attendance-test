@@ -72,7 +72,7 @@
                     {{ ($attendance->totalRestTime ?? 0) > 0 ? gmdate("H:i", $attendance->totalRestTime * 60) : '' }}
                 </td>
                 <td class="attendance__data">
-                    {{ ($attendance->workTimeExcludingRest ?? 0) > 0 ? gmdate("H:i", $attendance->workTimeExcludingRest * 60) : '' }}
+                    {{ gmdate("H:i", $attendance->workTimeExcludingRest * 60) }}
                 </td>
                 <td>
                     <a class="attendance__data detail" href="/attendance/{{ $attendance->id }}">詳細</a>
