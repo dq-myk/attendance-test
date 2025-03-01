@@ -3,6 +3,8 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Carbon\Carbon;
+use App\Models\Attendance;
 
 class AttendanceFactory extends Factory
 {
@@ -13,14 +15,28 @@ class AttendanceFactory extends Factory
      */
     public function definition()
     {
-        $clockInTime = $this->faker->time('H:i');
-        $clockOutTime = $this->faker->time('H:i', strtotime("+9 hour", strtotime($clockInTime)));
+        $randomMonthOffset = rand(-1, 1);
+        $date = Carbon::today()->addMonths($randomMonthOffset)->addDays(rand(0, 27));
+
+
+        $clockIn = (clone $date)->addHours(rand(9, 10))->addMinutes(rand(0, 59));
+
+        $isWorking = $this->faker->boolean(50);
+
+        if ($isWorking) {
+            $clockOut = null;
+            $status = '出勤中';
+        } else {
+            $clockOut = (clone $clockIn)->addHours(rand(7, 9))->addMinutes(rand(0, 59));
+            $status = '退勤済';
+        }
+
         return [
             'user_id' => $this->faker->numberBetween(1, 10),
-            'date' => $this->faker->date('Y-m-d'),
-            'clock_in' => $clockInTime,
-            'clock_out' => $clockOutTime,
-            'status' => $this->faker->randomElement(['勤務外', '出勤中', '休憩中', '退勤済']),
+            'date' => $clockIn->toDateString(),
+            'clock_in' => $clockIn->format('H:i:s'),
+            'clock_out' => $clockOut ? $clockOut->format('H:i:s') : null,
+            'status' => $status,
         ];
     }
 }

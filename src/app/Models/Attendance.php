@@ -30,4 +30,5 @@ class Attendance extends Model
     {
         return $this->hasMany(AttendanceCorrectRequest::class);
     }
+
 }

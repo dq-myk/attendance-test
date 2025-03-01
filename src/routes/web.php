@@ -36,10 +36,14 @@ Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 Route::get('/admin/login', [UserController::class, 'adminShow']);
 Route::post('/admin/login', [AuthenticatedSessionController::class, 'adminStore']);
 
+//ログアウト
+Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
+
+//管理者、スタッフ共通処理
+Route::get('/stamp_correction_request/list', [RequestController::class, 'requestList']);
+
 //スタッフ
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
-
     Route::get('/attendance', [AttendanceController::class, 'index']);
     Route::post('/attendance/start', [AttendanceController::class, 'startWork']);
     Route::post('/attendance/end', [AttendanceController::class, 'endWork']);
@@ -51,22 +55,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('/attendance/rest-start', [RestController::class, 'startRest']);
     Route::post('/attendance/rest-end', [RestController::class, 'endRest']);
-
-    Route::get('/stamp_correction_request/list', [RequestController::class, 'requestList']);
 });
 
 
 //管理者
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/attendance/list', [AdminAttendanceController::class, 'adminListShow']);
-    Route::get('/admin/staff/list', [AdminAttendanceController::class, 'adminStaffList']);
-    Route::get('/admin/attendance/staff/{id}', [AdminAttendanceController::class, 'adminAttendanceStaff']);
     Route::get('/admin/attendance/{id}', [AdminAttendanceController::class, 'adminDetail'])
         ->where('id', '[0-9]+')
         ->name('admin_attendance_detail');
     Route::put('/admin/attendance/{id}', [AdminAttendanceController::class, 'adminUpdate']);
+    Route::get('/admin/staff/list', [AdminAttendanceController::class, 'adminStaffList']);
+    Route::get('/admin/attendance/staff/{id}', [AdminAttendanceController::class, 'adminAttendanceStaff']);
     Route::get('/admin/attendance/staff/{id}/output', [AdminAttendanceController::class, 'output']);
-
     Route::get('/stamp_correction_request/approve/{attendance_correct_request}', [ApprovalController::class, 'showApprove']);
     Route::post('/stamp_correction_request/approve/{attendance_correct_request}', [ApprovalController::class, 'adminApprove']);
 

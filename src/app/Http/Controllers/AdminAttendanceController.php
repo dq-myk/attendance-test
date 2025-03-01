@@ -65,7 +65,7 @@ class AdminAttendanceController extends Controller
 
             $date = Carbon::parse($attendance->date);
             $year = $date->format('Y年');
-            $monthDay = $date->format('m月d日');
+            $monthDay = $date->format('n月j日');
 
             return view('admin_attendance_detail', compact('attendance', 'rests', 'year', 'monthDay'));
         }

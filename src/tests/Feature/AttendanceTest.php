@@ -80,13 +80,19 @@ class AttendanceTest extends TestCase
             'password' => Hash::make('password123'),
         ]);
 
+        $response = $this->actingAs($user)
+            ->get('/attendance');
+
+        $response->assertStatus(200)
+            ->assertSee('勤務外');
+
         $this->actingAs($user);
 
         $response = $this->get('/attendance');
 
         $response->assertSee('出勤');
 
-        $response = $this->post('/attendance/start');
+        $response = $this->actingAs($user)->post('/attendance/start');
 
         $response = $this->get('/attendance');
 
@@ -94,7 +100,7 @@ class AttendanceTest extends TestCase
     }
 
     //退勤済の場合は出勤ボタン非表示
-    public function test_clock_out()
+    public function test_clock_out_button_is_not_displayed()
     {
         $user = User::factory()->create([
             'role' => 'staff',
@@ -134,13 +140,13 @@ class AttendanceTest extends TestCase
 
         $this->actingAs($staff)
             ->post('/attendance/start')
-            ->assertStatus(302);
-
-        $this->assertDatabaseHas('attendances', [
-            'user_id' => $staff->id,
-        ]);
+            ->assertRedirect('/attendance');
 
         $attendance = Attendance::where('user_id', $staff->id)->first();
+        $this->assertDatabaseHas('attendances', [
+            'user_id' => $staff->id,
+            'clock_in' => now()->format('H:i:s'),
+        ]);
 
         $admin = User::factory()->create([
             'role' => 'admin',
@@ -149,9 +155,91 @@ class AttendanceTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->get('/admin/attendance/list')
+            ->get("/admin/attendance/{$attendance->id}")
             ->assertStatus(200)
-            ->assertSee(Carbon::parse($attendance->date)->format('Y/m/d'))
+            ->assertSee(Carbon::parse($attendance->date)->format('Y年') . '"', false)
+            ->assertSee(Carbon::parse($attendance->date)->format('n月j日') . '"', false)
             ->assertSee(Carbon::parse($attendance->clock_in)->format('H:i'));
+    }
+
+    //退勤処理
+    public function test_clock_out()
+    {
+        $staff = User::factory()->create([
+            'role' => 'staff',
+            'email' => 'staff@example.com',
+            'password' => Hash::make('password123'),
+        ]);
+
+        $this->actingAs($staff)
+            ->post('/attendance/start')
+            ->assertRedirect('/attendance');
+
+        $attendance = Attendance::where('user_id', $staff->id)->first();
+        $this->assertDatabaseHas('attendances', [
+            'user_id' => $staff->id,
+            'clock_in' => now()->format('H:i:s'),
+        ]);
+
+        $this->actingAs($staff)
+            ->get('/attendance')
+            ->assertSee('退勤');
+
+        $this->actingAs($staff)
+            ->post('/attendance/end')
+            ->assertRedirect('/attendance');
+
+        $attendance = Attendance::where('user_id', $staff->id)->first();
+        $this->assertDatabaseHas('attendances', [
+            'user_id' => $staff->id,
+            'clock_out' => now()->format('H:i:s'),
+        ]);
+
+        $this->actingAs($staff)
+            ->get('/attendance')
+            ->assertSee('退勤済');
+    }
+
+    //退勤時刻を管理画面で確認
+    public function test_admin_confirm_staff_clock_out()
+    {
+        $staff = User::factory()->create([
+            'role' => 'staff',
+            'email' => 'staff@example.com',
+            'password' => Hash::make('password123'),
+        ]);
+
+        $this->actingAs($staff)
+            ->post('/attendance/start')
+            ->assertRedirect('/attendance');
+
+        $attendance = Attendance::where('user_id', $staff->id)->first();
+        $this->assertDatabaseHas('attendances', [
+            'user_id' => $staff->id,
+            'clock_in' => now()->format('H:i:s'),
+        ]);
+
+        $this->actingAs($staff)
+            ->post('/attendance/end')
+            ->assertRedirect('/attendance');
+
+        $attendance = Attendance::where('user_id', $staff->id)->first();
+        $this->assertDatabaseHas('attendances', [
+            'user_id' => $staff->id,
+            'clock_out' => now()->format('H:i:s'),
+        ]);
+
+        $admin = User::factory()->create([
+            'role' => 'admin',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('adminpassword'),
+        ]);
+
+        $this->actingAs($admin)
+            ->get("/admin/attendance/{$attendance->id}")
+            ->assertStatus(200)
+            ->assertSee(Carbon::parse($attendance->date)->format('Y年') . '"', false)
+            ->assertSee(Carbon::parse($attendance->date)->format('n月j日') . '"', false)
+            ->assertSee(Carbon::parse($attendance->clock_out)->format('H:i'));
     }
 }

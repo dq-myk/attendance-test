@@ -15,7 +15,7 @@ class AttendanceController extends Controller
     //勤怠画面表示
     public function index()
     {
-        $currentDate = Carbon::now()->format('Y年n月d日 ') . '(' . $this->weekday(Carbon::now()->format('D')) . ')';
+        $currentDate = Carbon::now()->format('Y年n月j日 ') . '(' . $this->weekday(Carbon::now()->format('D')) . ')';
         $currentTime = Carbon::now()->format('H:i');
 
         $attendance = Attendance::where('user_id', Auth::id())
@@ -148,7 +148,7 @@ class AttendanceController extends Controller
         // 日付フォーマット
         $date = Carbon::parse($attendance->date);
         $year = $date->format('Y年');
-        $monthDay = $date->format('m月d日');
+        $monthDay = $date->format('n月j日');
 
         // 備考を取得
         $remarks = $attendanceCorrectRequest ? $attendanceCorrectRequest->remarks : '';

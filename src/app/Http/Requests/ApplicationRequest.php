@@ -24,7 +24,7 @@ class ApplicationRequest extends FormRequest
     public function rules()
     {
         return [
-        'clock_in' => 'required|date_format:H:i',
+        'clock_in' => 'required|date_format:H:i|before:clock_out',
         'clock_out' => 'required|date_format:H:i|after:clock_in',
         'rest_start' => 'nullable|array',
         'rest_start.*' => 'nullable|date_format:H:i|after:clock_in|before:clock_out',

@@ -20,7 +20,7 @@
 
 @section('content')
 <div class="attendance-list__group">
-    <h1>{{ \Carbon\Carbon::parse($date)->isoFormat('YYYY年M月D日') }}の勤怠</h1>
+    <h1>{{ \Carbon\Carbon::parse($date)->isoFormat('YYYY年N月J日') }}の勤怠</h1>
     <div class="date-select">
         <div class="day-before__group">
             <img class="before-icon" src="/images/矢印.png" alt="左矢印">
