@@ -54,58 +54,37 @@
                         </div>
                     </td>
                 </tr>
-                @foreach ($restsToDisplay as $index => $rest)
+
+                @php
+                    // 承認待ちの場合は2つ、未承認の場合は1つの休憩を表示
+                    $restCount = ($attendanceCorrectRequest && $attendanceCorrectRequest->status === '承認待ち') ? 2 : 1;
+                @endphp
+
+                @foreach (range(0, $restCount - 1) as $index)
+                    @php
+                        $rest = $rests[$index] ?? null;
+                        $borderClass = ($attendanceCorrectRequest && $attendanceCorrectRequest->status === '承認待ち') ? 'no-border' : '';
+                    @endphp
                     <tr>
-                        @if ($index == 0)
-                            <th class="attendance-detail_label">休憩</th>
-                        @elseif ($index == 1)
-                            <th class="attendance-detail_label">休憩2</th>
-                        @endif
+                        <th class="attendance-detail_label">
+                            @if ($index == 0)
+                                休憩
+                            @else
+                                休憩{{ $index + 1 }}
+                            @endif
+                        </th>
                         <td class="attendance__data">
-                            <div class="attendance__data__rest">
-                                <input class="attendance__data__input {{ $attendanceCorrectRequest && $attendanceCorrectRequest->status === '承認待ち' ? 'no-border' : '' }}" type="time" name="rest_start[]"
-                                    value="{{ old('rest_start.' . $index, $rest ? \Carbon\Carbon::parse($rest->rest_start)->format('H:i') : '') }}" {{ !$isEditable ? 'disabled' : '' }}>～
-                                <input class="attendance__data__input {{ $attendanceCorrectRequest && $attendanceCorrectRequest->status === '承認待ち' ? 'no-border' : '' }}" type="time" name="rest_end[]"
-                                    value="{{ old('rest_end.' . $index, $rest ? \Carbon\Carbon::parse($rest->rest_end)->format('H:i') : '') }}" {{ !$isEditable ? 'disabled' : '' }}>
-                            </div>
-                            <div class="detail__error-message">
-                                @if ($errors->has('rest_start.' . $index))
-                                    <p class="detail__error-message-rest_start">{{ $errors->first('rest_start.' . $index) }}</p>
-                                @endif
-                                @if ($errors->has('rest_end.' . $index))
-                                    <p class="detail__error-message-rest_end">{{ $errors->first('rest_end.' . $index) }}</p>
-                                @endif
-                            </div>
+                            @if ($rest)
+                                <div class="attendance__data__rest">
+                                    <input class="attendance__data__input {{ $borderClass }}" type="time" name="rest_start[]"
+                                        value="{{ old('rest_start.' . $index, $rest->rest_start ? \Carbon\Carbon::parse($rest->rest_start)->format('H:i') : '') }}" >～
+                                    <input class="attendance__data__input {{ $borderClass }}" type="time" name="rest_end[]"
+                                        value="{{ old('rest_end.' . $index, $rest->rest_end ? \Carbon\Carbon::parse($rest->rest_end)->format('H:i') : '') }}" >
+                                </div>
+                            @endif
                         </td>
                     </tr>
                 @endforeach
-
-                {{-- 承認待ちで休憩が1つだけの場合、2つ目の入力欄を追加 --}}
-                @if ($attendanceCorrectRequest && $attendanceCorrectRequest->status === '承認待ち' && count($restsToDisplay) < 2)
-                    <tr>
-                        <th class="attendance-detail_label">休憩2</th>
-                        <td class="attendance__data">
-                            <div class="attendance__data__rest">
-                                <input class="attendance__data__input {{ $attendanceCorrectRequest && $attendanceCorrectRequest->status === '承認待ち' ? 'no-border' : '' }}" type="time" name="rest_start[]" value="{{ old('rest_start.1') }}" {{ !$isEditable ? 'disabled' : '' }}>～
-                                <input class="attendance__data__input {{ $attendanceCorrectRequest && $attendanceCorrectRequest->status === '承認待ち' ? 'no-border' : '' }}" type="time" name="rest_end[]" value="{{ old('rest_end.1') }}" {{ !$isEditable ? 'disabled' : '' }}>
-                            </div>
-                        </td>
-                    </tr>
-                @endif
-
-                {{-- 休憩が全くない場合、ラベルのみ表示 --}}
-                @if (collect($restsToDisplay)->isEmpty())
-                    <tr>
-                        <th class="attendance-detail_label">休憩</th>
-                        <td class="attendance__data"></td>
-                    </tr>
-                    @if ($attendanceCorrectRequest && $attendanceCorrectRequest->status === '承認待ち')
-                        <tr>
-                            <th class="attendance-detail_label">休憩2</th>
-                            <td class="attendance__data"></td>
-                        </tr>
-                    @endif
-                @endif
 
                 <tr>
                     <th class="attendance-detail_label">備考</th>

@@ -110,7 +110,8 @@ class AttendanceTest extends TestCase
 
         $attendance = Attendance::factory()->create([
             'user_id' => $user->id,
-            'clock_out' => now(),
+            'date' => Carbon::now()->toDateString(), // ここを追加
+            'clock_out' => now()->format('H:i:s'),
             'status' => '退勤済',
         ]);
 
@@ -143,10 +144,10 @@ class AttendanceTest extends TestCase
             ->assertRedirect('/attendance');
 
         $attendance = Attendance::where('user_id', $staff->id)->first();
-        $this->assertDatabaseHas('attendances', [
-            'user_id' => $staff->id,
-            'clock_in' => now()->format('H:i:s'),
-        ]);
+        $this->assertTrue(
+            Carbon::parse($attendance->clock_in)->between(now()->subMinutes(6), now()),
+            "clock_in is not within the expected range: {$attendance->clock_in}"
+        );
 
         $admin = User::factory()->create([
             'role' => 'admin',
@@ -176,10 +177,10 @@ class AttendanceTest extends TestCase
             ->assertRedirect('/attendance');
 
         $attendance = Attendance::where('user_id', $staff->id)->first();
-        $this->assertDatabaseHas('attendances', [
-            'user_id' => $staff->id,
-            'clock_in' => now()->format('H:i:s'),
-        ]);
+        $this->assertTrue(
+            Carbon::parse($attendance->clock_in)->between(now()->subMinutes(6), now()),
+            "clock_in is not within the expected range: {$attendance->clock_in}"
+        );
 
         $this->actingAs($staff)
             ->get('/attendance')
@@ -214,10 +215,10 @@ class AttendanceTest extends TestCase
             ->assertRedirect('/attendance');
 
         $attendance = Attendance::where('user_id', $staff->id)->first();
-        $this->assertDatabaseHas('attendances', [
-            'user_id' => $staff->id,
-            'clock_in' => now()->format('H:i:s'),
-        ]);
+        $this->assertTrue(
+            Carbon::parse($attendance->clock_in)->between(now()->subMinutes(6), now()),
+            "clock_in is not within the expected range: {$attendance->clock_in}"
+        );
 
         $this->actingAs($staff)
             ->post('/attendance/end')

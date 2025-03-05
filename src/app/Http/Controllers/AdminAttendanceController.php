@@ -210,72 +210,69 @@ class AdminAttendanceController extends Controller
 
     //スタッフ毎の勤怠一覧をCSV出力
     public function output(Request $request, $id)
-{
-    $year = $request->query('year', now()->year);
-    $month = $request->query('month', now()->month);
+    {
+        $year = $request->query('year', now()->year);
+        $month = $request->query('month', now()->month);
 
-    // ユーザー名を取得
-    $user = User::find($id);
-    $userName = $user ? $user->name : '未登録ユーザー';
+        $user = User::find($id);
+        $userName = $user ? $user->name : '未登録ユーザー';
 
-    $attendances = Attendance::where('user_id', $id)
-        ->whereYear('date', $year)
-        ->whereMonth('date', $month)
-        ->with('rests')
-        ->get();
+        $attendances = Attendance::where('user_id', $id)
+            ->whereYear('date', $year)
+            ->whereMonth('date', $month)
+            ->with('rests')
+            ->get();
 
-    $response = new StreamedResponse(function () use ($attendances, $year, $month, $id, $userName) {
-        $handle = fopen('php://output', 'w');
+        $response = new StreamedResponse(function () use ($attendances, $year, $month, $id, $userName) {
+            $handle = fopen('php://output', 'w');
 
-        // ユーザー名をヘッダーの上に追加
-        $userRow = ["スタッフ名: {$userName}"];
-        mb_convert_variables('SJIS-win', 'UTF-8', $userRow);
-        fputcsv($handle, $userRow);
+            $userRow = ["スタッフ名: {$userName}"];
+            mb_convert_variables('SJIS-win', 'UTF-8', $userRow);
+            fputcsv($handle, $userRow);
 
-        // ヘッダー
-        $csvHeader = ['日付', '出勤', '退勤', '休憩', '合計'];
-        mb_convert_variables('SJIS-win', 'UTF-8', $csvHeader);
-        fputcsv($handle, $csvHeader);
+            $csvHeader = ['日付', '出勤', '退勤', '休憩', '合計'];
+            mb_convert_variables('SJIS-win', 'UTF-8', $csvHeader);
+            fputcsv($handle, $csvHeader);
 
-        foreach ($attendances as $attendance) {
-            $clockIn = $attendance->clock_in ? \Carbon\Carbon::parse($attendance->clock_in) : null;
-            $clockOut = $attendance->clock_out ? \Carbon\Carbon::parse($attendance->clock_out) : null;
-            $totalRestTime = 0;
+            foreach ($attendances as $attendance) {
+                $clockIn = $attendance->clock_in ? \Carbon\Carbon::parse($attendance->clock_in) : null;
+                $clockOut = $attendance->clock_out ? \Carbon\Carbon::parse($attendance->clock_out) : null;
+                $totalRestTime = 0;
 
-            if ($attendance->rests) {
-                foreach ($attendance->rests as $rest) {
-                    if ($rest->rest_start && $rest->rest_end) {
-                        $restStart = \Carbon\Carbon::parse($rest->rest_start);
-                        $restEnd = \Carbon\Carbon::parse($rest->rest_end);
-                        $totalRestTime += $restStart->diffInMinutes($restEnd);
+                if ($attendance->rests) {
+                    foreach ($attendance->rests as $rest) {
+                        if ($rest->rest_start && $rest->rest_end) {
+                            $restStart = \Carbon\Carbon::parse($rest->rest_start);
+                            $restEnd = \Carbon\Carbon::parse($rest->rest_end);
+                            $totalRestTime += $restStart->diffInMinutes($restEnd);
+                        }
                     }
                 }
+
+                $workTimeExcludingRest = 0;
+                if ($clockIn && $clockOut) {
+                    $workTimeExcludingRest = max($clockIn->diffInMinutes($clockOut) - $totalRestTime, 0);
+                }
+
+                $row = [
+                    $attendance->date ? \Carbon\Carbon::parse($attendance->date)->format('Y/m/d') : '',
+                    $clockIn ? $clockIn->format('H:i') : '',
+                    $clockOut ? $clockOut->format('H:i') : '',
+                    sprintf('%02d:%02d', floor($totalRestTime / 60), $totalRestTime % 60),
+                    sprintf('%02d:%02d', floor($workTimeExcludingRest / 60), $workTimeExcludingRest % 60),
+                ];
+
+                mb_convert_variables('SJIS-win', 'UTF-8', $row);
+                fputcsv($handle, $row);
             }
 
-            $workTimeExcludingRest = 0;
-            if ($clockIn && $clockOut) {
-                $workTimeExcludingRest = max($clockIn->diffInMinutes($clockOut) - $totalRestTime, 0);
-            }
+            fclose($handle);
+        });
 
-            $row = [
-                $attendance->date ? \Carbon\Carbon::parse($attendance->date)->format('Y/m/d') : '',
-                $clockIn ? $clockIn->format('H:i') : '',
-                $clockOut ? $clockOut->format('H:i') : '',
-                sprintf('%02d:%02d', floor($totalRestTime / 60), $totalRestTime % 60),
-                sprintf('%02d:%02d', floor($workTimeExcludingRest / 60), $workTimeExcludingRest % 60),
-            ];
+        $fileName = "attendance_{$id}_{$year}_{$month}.csv";
+        $response->headers->set('Content-Type', 'text/csv; charset=Shift_JIS');
+        $response->headers->set('Content-Disposition', 'attachment; filename="'.$fileName.'"');
 
-            mb_convert_variables('SJIS-win', 'UTF-8', $row);
-            fputcsv($handle, $row);
-        }
-
-        fclose($handle);
-    });
-
-    $fileName = "attendance_{$id}_{$year}_{$month}.csv";
-    $response->headers->set('Content-Type', 'text/csv; charset=Shift_JIS');
-    $response->headers->set('Content-Disposition', 'attachment; filename="'.$fileName.'"');
-
-    return $response;
-}
+        return $response;
+    }
 }

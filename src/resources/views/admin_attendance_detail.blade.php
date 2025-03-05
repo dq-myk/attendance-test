@@ -52,41 +52,40 @@
                         </div>
                     </td>
                 </tr>
-                @foreach ($rests as $index => $rest)
+
+                @foreach (range(0, 1) as $index)
+                    @php
+                        $rest = $rests[$index] ?? null;
+                    @endphp
                     <tr>
-                        @if ($index == 0)
-                            <th class="attendance-detail_label">休憩</th>
-                        @else
-                            <th class="attendance-detail_label">休憩{{ $index + 1 }}</th>
-                        @endif
+                        <th class="attendance-detail_label">
+                            @if ($index == 0)
+                                休憩
+                            @else
+                                休憩{{ $index + 1 }}
+                            @endif
+                        </th>
                         <td class="attendance__data">
-                            <div class="attendance__data__rest">
-                                <input class="attendance__data__input" type="time" name="rest_start[]" value="{{ old('rest_start.' . $index, $rest->rest_start ? \Carbon\Carbon::parse($rest->rest_start)->format('H:i') : '') }}" >～
-                                <input class="attendance__data__input" type="time" name="rest_end[]" value="{{ old('rest_end.' . $index, $rest->rest_end ? \Carbon\Carbon::parse($rest->rest_end)->format('H:i') : '') }}" >
-                            </div>
-                            <div class="detail__error-message">
-                                @if ($errors->has('rest_start.' . $index))
-                                    <p class="detail__error-message-rest_start">{{ $errors->first('rest_start.' . $index) }}</p>
-                                @endif
-                                @if ($errors->has('rest_end.' . $index))
-                                    <p class="detail__error-message-rest_end">{{ $errors->first('rest_end.' . $index) }}</p>
-                                @endif
-                            </div>
+                            @if ($rest)
+                                <div class="attendance__data__rest">
+                                    <input class="attendance__data__input" type="time" name="rest_start[]"
+                                        value="{{ old('rest_start.' . $index, $rest->rest_start ? \Carbon\Carbon::parse($rest->rest_start)->format('H:i') : '') }}" >～
+                                    <input class="attendance__data__input" type="time" name="rest_end[]"
+                                        value="{{ old('rest_end.' . $index, $rest->rest_end ? \Carbon\Carbon::parse($rest->rest_end)->format('H:i') : '') }}" >
+                                </div>
+                                <div class="detail__error-message">
+                                    @if ($errors->has('rest_start.' . $index))
+                                        <p class="detail__error-message-rest_start">{{ $errors->first('rest_start.' . $index) }}</p>
+                                    @endif
+                                    @if ($errors->has('rest_end.' . $index))
+                                        <p class="detail__error-message-rest_end">{{ $errors->first('rest_end.' . $index) }}</p>
+                                    @endif
+                                </div>
+                            @endif
                         </td>
                     </tr>
                 @endforeach
-                {{-- 休憩がない場合の空の入力欄 --}}
-                @if ($rests->isEmpty())
-                    <tr>
-                        <th class="attendance-detail_label">休憩</th>
-                        <td class="attendance__data">
-                            <div class="attendance__data__rest">
-                                <input class="attendance__data__input" type="time" name="rest_start[]" value="" >～
-                                <input class="attendance__data__input" type="time" name="rest_end[]" value="" >
-                            </div>
-                        </td>
-                    </tr>
-                @endif
+
                 <tr>
                     <th class="attendance-detail_label">備考</th>
                     <td class="attendance__data">

@@ -69,6 +69,7 @@ input[type="time"] {
 
 .approve_label,
 .approve__data {
+    height: 80px;
     padding: 16px 30px;
     background-color: #fff;
     font-size: 1.6rem;
@@ -124,11 +125,6 @@ input[type="time"] {
     cursor: pointer;
     transition: background-color 0.3s;
 }
-
-/* .approval__button:hover {
-    background-color: #0056b3;
-    ホバー時の色
-} */
 
 .approval__button:disabled {
     background-color: #696969;

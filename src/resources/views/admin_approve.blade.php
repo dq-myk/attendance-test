@@ -45,29 +45,30 @@
                     </td>
                 </tr>
 
-                @foreach ($rests as $index => $rest)
-                    <tr class="approve__row">
-                        <th class="approve_label">{{ $index == 0 ? '休憩' : '休憩' . ($index + 1) }}</th>
+                @foreach (range(0, 1) as $index)
+                    @php
+                        $rest = $rests[$index] ?? null;
+                    @endphp
+                    <tr>
+                        <th class="approve_label">
+                            @if ($index == 0)
+                                休憩
+                            @else
+                                休憩{{ $index + 1 }}
+                            @endif
+                        </th>
                         <td class="approve__data">
-                            <div class="approve__data__rest">
-                                <input class="approve__data__input" type="time" name="rest_start[]" value="{{ old('rest_start.' . $index, $rest->rest_start ? \Carbon\Carbon::parse($rest->rest_start)->format('H:i') : '') }}" disabled>～
-                                <input class="approve__data__input" type="time" name="rest_end[]" value="{{ old('rest_end.' . $index, $rest->rest_end ? \Carbon\Carbon::parse($rest->rest_end)->format('H:i') : '') }}" disabled>
-                            </div>
+                            @if ($rest)
+                                <div class="approve__data__rest">
+                                    <input class="approve__data__input" type="time" name="rest_start[]"
+                                        value="{{ old('rest_start.' . $index, $rest->rest_start ? \Carbon\Carbon::parse($rest->rest_start)->format('H:i') : '') }}" >～
+                                    <input class="approve__data__input" type="time" name="rest_end[]"
+                                        value="{{ old('rest_end.' . $index, $rest->rest_end ? \Carbon\Carbon::parse($rest->rest_end)->format('H:i') : '') }}" >
+                                </div>
+                            @endif
                         </td>
                     </tr>
                 @endforeach
-
-                @if ($rests->isEmpty())
-                    <tr class="approve__row">
-                        <th class="approve_label">休憩</th>
-                        <td class="approve__data">
-                            <div class="approve__data__rest">
-                                <input class="approve__data__input" type="time" name="rest_start[]" value="" disabled>～
-                                <input class="approve__data__input" type="time" name="rest_end[]" value="" disabled>
-                            </div>
-                        </td>
-                    </tr>
-                @endif
 
                 <tr class="approve__row">
                     <th class="approve_label">備考</th>

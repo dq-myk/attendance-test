@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 use App\Models\User;
 
-class StaffRegistTest extends TestCase
+class StaffRegisterTest extends TestCase
 {
     use RefreshDatabase;
 

@@ -69,6 +69,7 @@ input[type="time"] {
 
 .attendance-detail_label,
 .attendance__data {
+    height: 80px;
     padding: 16px 30px;
     background-color: #fff;
     font-size: 1.6rem;
