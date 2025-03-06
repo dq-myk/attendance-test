@@ -14,12 +14,12 @@
 ## 環境構築
 
 ### 1. Docker ビルド
-1. [git clone リンク](https://github.com/dq-myk/attendance-test)
-2. DockerDesktop アプリを起動後に以下を実行
+- [git clone リンク](https://github.com/dq-myk/attendance-test)
+1. DockerDesktop アプリを起動後に以下を実行
 ```docker
 docker-compose up -d --build
 ```
-3. 以下のコマンドでメール認証用MailHogコンテナを起動  
+2. 以下のコマンドでメール認証用MailHogコンテナを起動  
 ```docker
 docker run -d -p 1025:1025 -p 8025:8025 mailhog/mailhog
 ```
