@@ -77,9 +77,9 @@
                             @if ($rest)
                                 <div class="attendance__data__rest">
                                     <input class="attendance__data__input {{ $borderClass }}" type="time" name="rest_start[]"
-                                        value="{{ old('rest_start.' . $index, $rest->rest_start ? \Carbon\Carbon::parse($rest->rest_start)->format('H:i') : '') }}" >～
+                                        value="{{ old('rest_start.' . $index, $rest->rest_start ? \Carbon\Carbon::parse($rest->rest_start)->format('H:i') : '') }}"  {{ !$isEditable ? 'disabled' : '' }}>～
                                     <input class="attendance__data__input {{ $borderClass }}" type="time" name="rest_end[]"
-                                        value="{{ old('rest_end.' . $index, $rest->rest_end ? \Carbon\Carbon::parse($rest->rest_end)->format('H:i') : '') }}" >
+                                        value="{{ old('rest_end.' . $index, $rest->rest_end ? \Carbon\Carbon::parse($rest->rest_end)->format('H:i') : '') }}"  {{ !$isEditable ? 'disabled' : '' }}>
                                 </div>
                                 <div class="detail__error-message">
                                     @if ($errors->has('rest_start.' . $index))
