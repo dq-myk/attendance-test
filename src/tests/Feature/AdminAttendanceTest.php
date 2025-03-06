@@ -117,8 +117,8 @@ class AdminAttendanceTest extends TestCase
         ]);
 
         $currentDate = Carbon::now();
-        $previousDate = Carbon::now()->subMonth();
-        $nextDate = Carbon::now()->addMonth();
+        $previousDate = Carbon::now()->subDay();
+        $nextDate = Carbon::now()->addDay();
 
         $attendance = Attendance::factory()->create([
             'user_id' => $staff->id,

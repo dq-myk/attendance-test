@@ -81,6 +81,14 @@
                                     <input class="attendance__data__input {{ $borderClass }}" type="time" name="rest_end[]"
                                         value="{{ old('rest_end.' . $index, $rest->rest_end ? \Carbon\Carbon::parse($rest->rest_end)->format('H:i') : '') }}" >
                                 </div>
+                                <div class="detail__error-message">
+                                    @if ($errors->has('rest_start.' . $index))
+                                        <p class="detail__error-message-rest_start">{{ $errors->first('rest_start.' . $index) }}</p>
+                                    @endif
+                                    @if ($errors->has('rest_end.' . $index))
+                                        <p class="detail__error-message-rest_end">{{ $errors->first('rest_end.' . $index) }}</p>
+                                    @endif
+                                </div>
                             @endif
                         </td>
                     </tr>
