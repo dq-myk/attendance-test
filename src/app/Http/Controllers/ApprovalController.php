@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+// フォームから送信されたデータや URL パラメータ、セッション情報などを取得できるが、ここでは不要
 use Illuminate\Support\Facades\Auth;
+// ログインしているユーザーの情報を取得したり、認証を制御したりできるが、ここでは不要
+use App\Models\User;
+// Userモデルは使用していないので、ここでは不要
 use App\Models\Attendance;
 use App\Models\Rest;
 use App\Models\AttendanceCorrectRequest;
-use App\Models\User;
 use App\Models\Approval;
 use Carbon\Carbon;
 

@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attendance;
+// このモデルは参照していない為、ここでは不要
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Attendance;
 use App\Models\AttendanceCorrectRequest;
 
 class RequestController extends Controller

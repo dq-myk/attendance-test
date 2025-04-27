@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+// Authファサードは使用されていない為、ここでは不要
+use Illuminate\Http\Request;
 use App\Models\Attendance;
 use App\Models\Rest;
 use Carbon\Carbon;
