@@ -276,4 +276,3 @@ class AdminAttendanceController extends Controller
         return $response;
     }
 }
-

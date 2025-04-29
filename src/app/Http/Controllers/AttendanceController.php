@@ -229,4 +229,3 @@ class AttendanceController extends Controller
         return redirect('/stamp_correction_request/list');
     }
 }
-
